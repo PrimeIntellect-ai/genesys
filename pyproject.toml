@@ -1,0 +1,20 @@
+[project]
+name = "intellect"
+version = "0.1.0"
+description = "AGI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "datasets>=3.0.0",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+
+[tool.uv]
+dev-dependencies = ["ruff>=0.5.0", "pre-commit>=3.0.0","pytest>=7.0.0", "faker>=0"]
