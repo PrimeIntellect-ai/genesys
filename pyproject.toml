@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "datasets>=3.0.0",
+    "transformers>=4.44.2",
+    "sglang>=0.4.1",
+    "tqdm"
 ]
 
 
