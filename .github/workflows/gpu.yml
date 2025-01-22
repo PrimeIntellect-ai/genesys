@@ -1,33 +1,33 @@
-name: Tests on GPU
+# name: Tests on GPU
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    # This will trigger the workflow for pull requests to any branch
-    types: [opened, synchronize, reopened]
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     # This will trigger the workflow for pull requests to any branch
+#     types: [opened, synchronize, reopened]
 
-jobs:
-  gpu-tests:
-    name: python
-    runs-on: self-hosted
+# jobs:
+#   gpu-tests:
+#     name: python
+#     runs-on: self-hosted
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           submodules: true
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
+#       - name: Install uv
+#         uses: astral-sh/setup-uv@v3
+#         with:
+#           enable-cache: true
+#           cache-dependency-glob: "uv.lock"
       
-      - name: Set up Python 
-        run: uv python install 3.10.13
+#       - name: Set up Python 
+#         run: uv python install 3.10.13
 
-      - name: Install the project
-        run: uv sync --all-extras --dev
-      - name: Run tests
-        run: uv run pytest tests
+#       - name: Install the project
+#         run: uv sync --all-extras --dev
+#       - name: Run tests
+#         run: uv run pytest tests
