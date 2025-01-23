@@ -23,7 +23,7 @@ def main(config: Config):
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
-    math_dataset = load_dataset("PrimeIntellect/NuminaMath-groundtruth")["train"]
+    math_dataset = load_dataset("Primegenesys/NuminaMath-groundtruth")["train"]
     math_dataset = math_dataset.add_column("problem_id", range(len(math_dataset)))
 
     sampling_params = dict(temperature=config.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
