@@ -3,14 +3,14 @@ name = "intellect"
 version = "0.1.0"
 description = "AGI"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "torch>=2.4.1",
     "datasets>=3.0.0",
     "transformers>=4.44.2",
     "tqdm",
-    "antlr4-python3-runtime==4.11"
-
+    "antlr4-python3-runtime==4.11",
+    "pydantic_config @ git+https://github.com/samsja/pydantic_config.git@74c94ee",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +28,10 @@ sglang = [
     "vllm",
     "flashinfer",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true # allow direct references to git repos in dependencies
+
 
 [tool.uv.sources]
 flashinfer = [
