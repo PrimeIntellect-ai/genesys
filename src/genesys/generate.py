@@ -6,6 +6,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer
 from genesys.utils import GcpBucket, repeat_elements, save_batch_results
+import uuid
 
 SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 
@@ -44,7 +45,6 @@ def main(config: Config):
     max_samples = config.max_samples if config.max_samples is not None else len(math_dataset)
 
     all_results = []
-    file_counter = 0
 
     for i in tqdm(range(0, min(max_samples, len(math_dataset)), config.batch_size), desc="Generating data"):
         batch = math_dataset[i : min(i + config.batch_size, len(math_dataset))]
@@ -73,10 +73,9 @@ def main(config: Config):
             all_results.append(result)
 
         if len(all_results) >= config.sample_per_file:
-            file_name = f"out_{file_counter}.jsonl"
+            file_name = f"out_{uuid.uuid4()}.jsonl"
             save_batch_results(all_results, file_name, gcp_bucket)
             all_results = []
-            file_counter += 1
 
 
 if __name__ == "__main__":
