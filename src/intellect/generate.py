@@ -1,5 +1,5 @@
-import argparse
 import itertools
+from pydantic_config import BaseConfig, parse_argv
 import sglang as sgl
 from datasets import load_dataset
 from tqdm import tqdm
@@ -9,33 +9,43 @@ from intellect.utils import repeat_elements, save_batch_results, verify_math_sam
 SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 
 
-def main(args):
-    llm = sgl.Engine(model_path=args.model, tp_size=args.num_gpus)
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+class Config(BaseConfig):
+    name_model: str = "Qwen/QwQ-32B-Preview"
+    out_file_name: str = "out.jsonl"
+    num_responses_per_question: int = 1
+    num_gpus: int = 8
+    temperature: float = 0.9
+    batch_size: int = 10000
+    max_samples: int | None = None
+
+
+def main(config: Config):
+    llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
+    tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
     math_dataset = load_dataset("PrimeIntellect/NuminaMath-groundtruth")["train"]
     math_dataset = math_dataset.add_column("problem_id", range(len(math_dataset)))
 
-    sampling_params = dict(temperature=args.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
+    sampling_params = dict(temperature=config.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
 
-    open(args.out_file_name, "w").close()
+    open(config.out_file_name, "w").close()
 
-    max_samples = args.max_samples if args.max_samples is not None else len(math_dataset)
+    max_samples = config.max_samples if config.max_samples is not None else len(math_dataset)
 
-    for i in tqdm(range(0, min(max_samples, len(math_dataset)), args.batch_size), desc="Generating data"):
-        batch = math_dataset[i : min(i + args.batch_size, len(math_dataset))]
+    for i in tqdm(range(0, min(max_samples, len(math_dataset)), config.batch_size), desc="Generating data"):
+        batch = math_dataset[i : min(i + config.batch_size, len(math_dataset))]
         batch_ids = list(
-            itertools.chain.from_iterable([[idx] * args.num_responses_per_question for idx in batch["problem_id"]])
+            itertools.chain.from_iterable([[idx] * config.num_responses_per_question for idx in batch["problem_id"]])
         )
         batch_ground_truths = list(
-            itertools.chain.from_iterable([[gt] * args.num_responses_per_question for gt in batch["ground_truth"]])
+            itertools.chain.from_iterable([[gt] * config.num_responses_per_question for gt in batch["ground_truth"]])
         )
 
         batch_messages = [
             [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": problem}]
             for problem in batch["problem"]
         ]
-        batch_messages = repeat_elements(batch_messages, args.num_responses_per_question)
+        batch_messages = repeat_elements(batch_messages, config.num_responses_per_question)
         batch_inputs = tokenizer.apply_chat_template(batch_messages, tokenize=False, add_generation_prompt=True)
         batch_output = llm.generate(batch_inputs, sampling_params)
 
@@ -50,18 +60,9 @@ def main(args):
 
             all_results.append(result)
 
-        save_batch_results(all_results, args.out_file_name)
+        save_batch_results(all_results, config.out_file_name)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process math problems in parallel")
-    parser.add_argument("--model", type=str, default="Qwen/QwQ-32B-Preview")
-    parser.add_argument("--out_file_name", type=str, default="out.jsonl")
-    parser.add_argument("--num_responses_per_question", type=int, default=1)
-    parser.add_argument("--num_gpus", type=int, default=8)
-    parser.add_argument("--temperature", type=float, default=0.9)
-    parser.add_argument("--batch_size", type=int, default=10000)
-    parser.add_argument("--max_samples", type=int, default=None)
-
-    args = parser.parse_args()
-    main(args)
+    config = Config(**parse_argv())
+    main(config)
