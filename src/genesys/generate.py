@@ -4,7 +4,7 @@ import sglang as sgl
 from datasets import load_dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer
-from intellect.utils import repeat_elements, save_batch_results, verify_math_sample
+from genesys.utils import repeat_elements, save_batch_results, verify_math_sample
 
 SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 

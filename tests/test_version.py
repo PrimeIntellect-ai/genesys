@@ -1,5 +1,5 @@
-import intellect
+import genesys
 
 
 def test_version():
-    assert intellect.__version__ == "0.1.0"
+    assert genesys.__version__ == "0.1.0"

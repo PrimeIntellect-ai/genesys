@@ -1,10 +1,10 @@
-# intellect
+# Genesys
 
 
 ## install
 
 ```
-git clone git@github.com:PrimeIntellect-ai/intellect.git
+git clone git@github.com:PrimeIntellect-ai/genesys.git
 uv sync --extra sglang
 ```
 
@@ -13,7 +13,7 @@ uv sync --extra sglang
 This is a short run to test if the repo is installed correctly
 
 ```
-uv run python src/intellect/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
+uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
 ```
 
 for dev setup:
