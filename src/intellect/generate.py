@@ -20,7 +20,9 @@ def main(args):
 
     open(args.out_file_name, "w").close()
 
-    for i in tqdm(range(0, len(math_dataset), args.batch_size), desc="Generating data"):
+    max_samples = args.max_samples if args.max_samples is not None else len(math_dataset)
+
+    for i in tqdm(range(0, min(max_samples, len(math_dataset)), args.batch_size), desc="Generating data"):
         batch = math_dataset[i : min(i + args.batch_size, len(math_dataset))]
         batch_ids = list(
             itertools.chain.from_iterable([[idx] * args.num_responses_per_question for idx in batch["problem_id"]])
@@ -59,6 +61,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_gpus", type=int, default=8)
     parser.add_argument("--temperature", type=float, default=0.9)
     parser.add_argument("--batch_size", type=int, default=10000)
+    parser.add_argument("--max_samples", type=int, default=None)
 
     args = parser.parse_args()
     main(args)
