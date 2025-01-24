@@ -3,8 +3,16 @@
 
 ## install
 
+quick install (only will work when repo got open source)
 ```
+curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
+```
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
 git clone git@github.com:PrimeIntellect-ai/genesys.git
+cd genesys
 uv sync --extra sglang
 ```
 
