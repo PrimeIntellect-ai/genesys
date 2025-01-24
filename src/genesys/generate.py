@@ -31,8 +31,7 @@ class Config(BaseConfig):
 
 
 def main(config: Config):
-    if config.gcp_bucket is not None:
-        gcp_bucket = GcpBucket(config.gcp_bucket)
+    gcp_bucket = GcpBucket(config.gcp_bucket) if config.gcp_bucket is not None else None
 
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
