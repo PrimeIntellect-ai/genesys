@@ -38,6 +38,8 @@ allow-direct-references = true # allow direct references to git repos in depende
 flashinfer = [
   { index = "flash-infer"},
 ]
+sglang = { path = "third_party/sglang/python", editable = true }
+
 
 [build-system]
 requires = ["hatchling"]

@@ -666,7 +666,7 @@ requires-dist = [
     { name = "psutil", marker = "extra == 'sglang'" },
     { name = "pydantic-config", git = "https://github.com/samsja/pydantic_config.git?rev=74c94ee" },
     { name = "setuptools", marker = "extra == 'sglang'" },
-    { name = "sglang", extras = ["srt"], marker = "extra == 'sglang'", specifier = ">=0.4.1" },
+    { name = "sglang", extras = ["srt"], marker = "extra == 'sglang'", editable = "third_party/sglang/python" },
     { name = "sympy", marker = "extra == 'sglang'" },
     { name = "torch", specifier = ">=2.4.1" },
     { name = "tqdm" },
@@ -3127,7 +3127,7 @@ wheels = [
 [[package]]
 name = "sglang"
 version = "0.4.1.post7"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "third_party/sglang/python" }
 dependencies = [
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "ipython", version = "8.31.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -3135,10 +3135,6 @@ dependencies = [
     { name = "requests" },
     { name = "setproctitle" },
     { name = "tqdm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/56/1d3f897ac504523381848e027e7fbfe4d1f9efe8d3c90bedd6a62154dc96/sglang-0.4.1.post7.tar.gz", hash = "sha256:61f3634fe06fcfc928a7077ba41c4a96641b958309dccf22b91e398b906c768f", size = 518391 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/d2/43be1cdd72df937c2db7484a603f239f52c22ca87422b4970a94c4021caa/sglang-0.4.1.post7-py3-none-any.whl", hash = "sha256:3eff86713eb47cf29c74dbc4d7ebe40d821a54fa415e8056c1f7d27514608bb1", size = 733819 },
 ]
 
 [package.optional-dependencies]
@@ -3168,6 +3164,89 @@ srt = [
     { name = "uvloop" },
     { name = "vllm" },
     { name = "xgrammar" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "accelerate", marker = "extra == 'test'" },
+    { name = "aiohttp", marker = "extra == 'runtime-common'" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.20.0" },
+    { name = "cuda-python", marker = "extra == 'srt'" },
+    { name = "decord", marker = "extra == 'runtime-common'" },
+    { name = "fastapi", marker = "extra == 'runtime-common'" },
+    { name = "flashinfer", marker = "extra == 'srt'", specifier = "==0.1.6" },
+    { name = "hf-transfer", marker = "extra == 'runtime-common'" },
+    { name = "huggingface-hub", marker = "extra == 'runtime-common'" },
+    { name = "interegular", marker = "extra == 'runtime-common'" },
+    { name = "ipython" },
+    { name = "jsonlines", marker = "extra == 'test'" },
+    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.0.0" },
+    { name = "matplotlib", marker = "extra == 'test'" },
+    { name = "modelscope", marker = "extra == 'runtime-common'" },
+    { name = "numpy" },
+    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
+    { name = "orjson", marker = "extra == 'runtime-common'" },
+    { name = "outlines", marker = "extra == 'runtime-common'", specifier = ">=0.0.44,<0.1.0" },
+    { name = "packaging", marker = "extra == 'runtime-common'" },
+    { name = "pandas", marker = "extra == 'test'" },
+    { name = "peft", marker = "extra == 'test'" },
+    { name = "pillow", marker = "extra == 'runtime-common'" },
+    { name = "prometheus-client", marker = "extra == 'runtime-common'", specifier = ">=0.20.0" },
+    { name = "psutil", marker = "extra == 'runtime-common'" },
+    { name = "pydantic", marker = "extra == 'runtime-common'" },
+    { name = "python-multipart", marker = "extra == 'runtime-common'" },
+    { name = "pyzmq", marker = "extra == 'runtime-common'", specifier = ">=25.1.2" },
+    { name = "requests" },
+    { name = "sentence-transformers", marker = "extra == 'test'" },
+    { name = "setproctitle" },
+    { name = "sgl-kernel", marker = "extra == 'srt'", specifier = ">=0.0.2.post14" },
+    { name = "sglang", extras = ["all"], marker = "extra == 'dev'" },
+    { name = "sglang", extras = ["all-cpu"], marker = "extra == 'dev-cpu'" },
+    { name = "sglang", extras = ["all-hip"], marker = "extra == 'dev-hip'" },
+    { name = "sglang", extras = ["all-hpu"], marker = "extra == 'dev-hpu'" },
+    { name = "sglang", extras = ["all-xpu"], marker = "extra == 'dev-xpu'" },
+    { name = "sglang", extras = ["anthropic"], marker = "extra == 'all'" },
+    { name = "sglang", extras = ["anthropic"], marker = "extra == 'all-cpu'" },
+    { name = "sglang", extras = ["anthropic"], marker = "extra == 'all-hip'" },
+    { name = "sglang", extras = ["anthropic"], marker = "extra == 'all-hpu'" },
+    { name = "sglang", extras = ["anthropic"], marker = "extra == 'all-xpu'" },
+    { name = "sglang", extras = ["litellm"], marker = "extra == 'all'" },
+    { name = "sglang", extras = ["litellm"], marker = "extra == 'all-cpu'" },
+    { name = "sglang", extras = ["litellm"], marker = "extra == 'all-hip'" },
+    { name = "sglang", extras = ["litellm"], marker = "extra == 'all-hpu'" },
+    { name = "sglang", extras = ["litellm"], marker = "extra == 'all-xpu'" },
+    { name = "sglang", extras = ["openai"], marker = "extra == 'all'" },
+    { name = "sglang", extras = ["openai"], marker = "extra == 'all-cpu'" },
+    { name = "sglang", extras = ["openai"], marker = "extra == 'all-hip'" },
+    { name = "sglang", extras = ["openai"], marker = "extra == 'all-hpu'" },
+    { name = "sglang", extras = ["openai"], marker = "extra == 'all-xpu'" },
+    { name = "sglang", extras = ["runtime-common"], marker = "extra == 'srt'" },
+    { name = "sglang", extras = ["runtime-common"], marker = "extra == 'srt-cpu'" },
+    { name = "sglang", extras = ["runtime-common"], marker = "extra == 'srt-hip'" },
+    { name = "sglang", extras = ["runtime-common"], marker = "extra == 'srt-hpu'" },
+    { name = "sglang", extras = ["runtime-common"], marker = "extra == 'srt-xpu'" },
+    { name = "sglang", extras = ["srt"], marker = "extra == 'all'" },
+    { name = "sglang", extras = ["srt-cpu"], marker = "extra == 'all-cpu'" },
+    { name = "sglang", extras = ["srt-hip"], marker = "extra == 'all-hip'" },
+    { name = "sglang", extras = ["srt-hpu"], marker = "extra == 'all-hpu'" },
+    { name = "sglang", extras = ["srt-xpu"], marker = "extra == 'all-xpu'" },
+    { name = "sglang", extras = ["test"], marker = "extra == 'dev'" },
+    { name = "sglang", extras = ["test"], marker = "extra == 'dev-cpu'" },
+    { name = "sglang", extras = ["test"], marker = "extra == 'dev-hip'" },
+    { name = "sglang", extras = ["test"], marker = "extra == 'dev-hpu'" },
+    { name = "sglang", extras = ["test"], marker = "extra == 'dev-xpu'" },
+    { name = "tiktoken", marker = "extra == 'openai'" },
+    { name = "torch", marker = "extra == 'srt'" },
+    { name = "torch", marker = "extra == 'srt-cpu'" },
+    { name = "torch", marker = "extra == 'srt-hip'" },
+    { name = "torch-memory-saver", marker = "extra == 'torch-memory-saver'" },
+    { name = "torchao", marker = "extra == 'runtime-common'", specifier = ">=0.7.0" },
+    { name = "tqdm" },
+    { name = "uvicorn", marker = "extra == 'runtime-common'" },
+    { name = "uvloop", marker = "extra == 'runtime-common'" },
+    { name = "vllm", marker = "extra == 'srt'", specifier = "==0.6.4.post1" },
+    { name = "vllm", marker = "extra == 'srt-hip'", specifier = "==0.6.3.post2.dev1" },
+    { name = "xgrammar", marker = "extra == 'runtime-common'", specifier = ">=0.1.10" },
 ]
 
 [[package]]
@@ -3446,7 +3525,7 @@ name = "triton"
 version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "filelock", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "filelock", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/98/29/69aa56dc0b2eb2602b553881e34243475ea2afd9699be042316842788ff5/triton-3.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6b0dd10a925263abbe9fa37dcde67a5e9b2383fc269fdf59f5657cac38c5d1d8", size = 209460013 },

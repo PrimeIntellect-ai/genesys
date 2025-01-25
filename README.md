@@ -13,6 +13,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 git clone git@github.com:PrimeIntellect-ai/genesys.git
 cd genesys
+git submodule update --init --recursive
 uv sync --extra sglang
 ```
 

@@ -1,0 +1,3 @@
+[submodule "third_party/sglang"]
+	path = third_party/sglang
+	url = git@github.com:PrimeIntellect-ai/sglang.git
