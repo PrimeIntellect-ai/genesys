@@ -1,5 +1,4 @@
 from typing import List, Union
-from pydantic import BaseModel, Field
 from genesys.verifier.code_test_verifier import CodeTestsVerification, verify_code, init_containers, close_containers
 from genesys.verifier.math_verifier import MathGroundTruthVerification, verify_math
 

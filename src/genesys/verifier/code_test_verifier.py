@@ -374,9 +374,9 @@ This JavaScript implementation should work correctly for the given problem.
     import time
 
     start = time.time()
-    for c, t, l in zip(code_samples, test_cases, languages):
-        print(f"\n\n### Testing for {l} ###")
-        score = verify_code(c, t, l)
+    for code, test, lang in zip(code_samples, test_cases, languages):
+        print(f"\n\n### Testing for {lang} ###")
+        score = verify_code(code, test, lang)
         print(score)
     end = time.time()
 

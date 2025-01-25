@@ -1,3 +1,12 @@
+"""
+Math verification utils from https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/minerva_math/utils.py
+"""
+
+import signal
+import sympy
+import json
+from sympy.parsing.latex import parse_latex
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -6,16 +15,6 @@ class MathGroundTruthVerification(BaseModel):
     ground_truth: str
 
 
-"""
-Math verification utils from https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/minerva_math/utils.py
-"""
-
-import re
-import signal
-import sympy
-import json
-from sympy.parsing.latex import parse_latex
-from typing import Optional
 
 
 def verify_math(model_output, ground_truth_answer):
