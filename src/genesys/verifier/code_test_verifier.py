@@ -3,9 +3,9 @@ import io
 import tarfile
 import uuid
 import re
+import ast
 from typing import List, Dict
 from pydantic import BaseModel, Field
-
 
 class CodeTestsVerification(BaseModel):
     type: str = Field("code_tests")
@@ -13,11 +13,29 @@ class CodeTestsVerification(BaseModel):
     test_cases: List[Dict]
 
 
-# We keep a global dictionary for our containers
+HARNESS_CODE_METHOD = """
+import {code_filename} as user_code
+obj = user_code.{class_or_func}()
+method = getattr(obj, '{fn_name}')
+args = {args}
+res = method(*args)
+print(res)
+"""
+
+HARNESS_CODE_FUNCTION = """
+import {code_filename} as user_code
+method = getattr(user_code, '{fn_name}')
+args = {args}
+res = method(*args)
+print(res)
+"""
+
 CONTAINERS = {}
 
-
 def init_containers():
+    """
+    call this before tests; we want global containers to not have to restart them for every test
+    """
     docker_client = docker.from_env()
 
     CONTAINERS["Python"] = docker_client.containers.run("python:3.9", command="sleep infinity", detach=True)
@@ -53,9 +71,44 @@ def extract_code(response: str) -> str:
         return code_blocks[-1].strip()
     else:
         return None
+    
+
+def detect_callable_name(user_code: str, fn_name: str):
+    """
+    Returns (class_name, is_method) if we find 'fn_name' inside a class.
+    Otherwise returns (function_name, is_method=False) if we find 'fn_name' top-level.
+    Returns (None, None) if not found at all.
+    """
+
+    try:
+        tree = ast.parse(user_code)
+    except SyntaxError:
+        return (None, None)  
+
+    found_class = None
+    found_function_top_level = False
+
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            for subnode in node.body:
+                if isinstance(subnode, ast.FunctionDef) and subnode.name == fn_name:
+                    found_class = node.name
+                    break
+            if found_class:
+                break
+
+        elif isinstance(node, ast.FunctionDef) and node.name == fn_name:
+            found_function_top_level = True
+
+    if found_class:
+        return (found_class, True)
+    elif found_function_top_level:
+        return (fn_name, False)
+
+    return (None, None)
 
 
-def _verify_compiled_code(container, code, test_cases, language):
+def verify_compiled_code(container, code, test_cases, language):
     if language == "C++":
         source_filename = f"main_{uuid.uuid4().hex}.cpp"
         compile_cmd = f"g++ {source_filename} -o main"
@@ -65,12 +118,10 @@ def _verify_compiled_code(container, code, test_cases, language):
         compile_cmd = f"rustc {source_filename} -o main"
         run_binary = "./main"
     else:
-        # Shouldn't happen if we call this only for Rust/C++
         return 0.0
 
-    # Copy source
     copy_to_container(container, source_filename, code)
-    # Compile
+
     compile_result = container.exec_run(cmd=compile_cmd, stdout=True, stderr=True)
     if compile_result.exit_code != 0:
         error_output = compile_result.output.decode()
@@ -94,7 +145,72 @@ def _verify_compiled_code(container, code, test_cases, language):
     return passed_tests / total_tests
 
 
-def _verify_interpreted_code(container, code, test_cases, language):
+def verify_python_call_based_code(container, user_code: str, test_cases: List[Dict]):
+    """
+    test_cases look like:
+    [
+      {
+         "fn_name": "computeSum",
+         "input": [3,5],
+         "output": 8
+      },
+      ...
+    ]
+    The llm generated code might contain a class with a method:
+      class Solution:
+          def computeSum(self, x, y): return x+y
+    or a function
+      def computeSum(x, y): return x+y
+    """
+
+    injection = "from typing import List, Dict, Set, Tuple, Union, Optional\n" # often starter code is typed on leetcode
+    user_code = injection + user_code
+
+    passed_tests = 0
+    total_tests = len(test_cases)
+
+    import uuid
+    code_filename = f"user_code_{uuid.uuid4().hex}.py"
+    copy_to_container(container, code_filename, user_code)
+
+    for test in test_cases:
+        fn_name = test["fn_name"]
+        args = test["input"]
+        expected = test["output"]
+
+        class_or_func, is_method = detect_callable_name(user_code, fn_name)
+                
+        if class_or_func is None:
+            continue
+
+        if is_method:
+            harness_code = HARNESS_CODE_METHOD.format(
+                code_filename=code_filename[:-3],
+                class_or_func=class_or_func,
+                fn_name=fn_name,
+                args=args
+            )
+            
+        else:
+            harness_code = HARNESS_CODE_FUNCTION.format(
+                code_filename=code_filename[:-3],
+                fn_name=fn_name,
+                args=args
+            )
+
+        harness_filename = f"harness_{uuid.uuid4().hex}.py"
+        copy_to_container(container, harness_filename, harness_code)
+
+        run_result = container.exec_run(["python", harness_filename], stdout=True, stderr=True)
+        output = run_result.output.decode().strip()
+        
+        if output == str(expected).strip():
+            passed_tests += 1
+
+    return passed_tests / total_tests
+
+
+def verify_interpreted_code(container, code, test_cases, language):
     """
     Copy code once, then run multiple times with different inputs.
     """
@@ -107,7 +223,6 @@ def _verify_interpreted_code(container, code, test_cases, language):
     else:
         return 0.0
 
-    # Copy code once
     copy_to_container(container, code_filename, code)
 
     passed_tests = 0
@@ -139,13 +254,20 @@ def verify_code(response: str, test_cases, language):
 
     container = CONTAINERS[language]
 
-    if language in ["C++", "Rust"]:
-        return _verify_compiled_code(container, code, test_cases, language)
-    elif language in ["Python", "Javascript"]:
-        return _verify_interpreted_code(container, code, test_cases, language)
+    if all(tc.get("type") == "function_call" for tc in test_cases):
+        if language == "Python":
+            return verify_python_call_based_code(container, code, test_cases)
+        else:
+            print("Call-based code testing not implemented for this language.")
+            return 0.0
     else:
-        print("Unsupported language:", language)
-        return 0.0
+        if language in ["C++", "Rust"]:
+            return verify_compiled_code(container, code, test_cases, language)
+        elif language in ["Python", "Javascript"]:
+            return verify_interpreted_code(container, code, test_cases, language)
+        else:
+            print("Unsupported language:", language)
+            return 0.0
 
 
 if __name__ == "__main__":
@@ -360,21 +482,77 @@ rl.on('close', () => {
 
 This JavaScript implementation should work correctly for the given problem.
         """,
-    ] * 10
+    ] * 2
 
     test_cases = [
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
+        [{"type": "stdin_stdout", "input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 2,
+        [{"type": "stdin_stdout", "input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 2,
+        [{"type": "stdin_stdout", "input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 2,
+        [{"type": "stdin_stdout", "input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 2,
     ] * 10
 
-    languages = ["Python", "C++", "Rust", "Javascript"] * 25
+    languages = ["Python", "C++", "Rust", "Javascript"] * 2
+    
+    
+    call_based_codes = [
+        """
+Here's my solution
+
+```python
+class Solution:
+    def majorityElement(self, nums: List[int]) -> int:
+        candidate = None
+        count = 0
+        
+        for num in nums:
+            if count == 0:
+                candidate = num
+            count += (1 if num == candidate else -1)
+        
+        return candidate
+```
+
+Hope it helps
+        """,
+        """
+Here's my solution
+
+```python
+def majorityElement(nums: List[int]) -> int:
+    candidate = None
+    count = 0
+    
+    for num in nums:
+        if count == 0:
+            candidate = num
+        count += (1 if num == candidate else -1)
+    
+    return candidate
+```
+
+Hope it helps
+        """
+        
+    ]
+    
+    call_based_test_cases = [
+        [{"type": "function_call", "fn_name": "majorityElement", "input": [[3, 2, 3]], "output": 3}],
+        [{"type": "function_call", "fn_name": "majorityElement", "input": [[3, 2, 3]], "output": 3}]
+    ]
+    
+    call_based_languages = [
+        "Python",
+        "Python"
+    ]
+    
+    all_codes = code_samples +  call_based_codes
+    all_test_cases = test_cases + call_based_test_cases
+    all_languages = languages + call_based_languages
 
     import time
 
     start = time.time()
-    for code, test, lang in zip(code_samples, test_cases, languages):
+    for code, test, lang in zip(all_codes, all_test_cases, all_languages):
         print(f"\n\n### Testing for {lang} ###")
         score = verify_code(code, test, lang)
         print(score)
