@@ -44,13 +44,13 @@ uv run pytest
 build 
 
 ```
-sudo docker build -t genesys:latest .
+sudo docker build -t primeintellect/genesys:latest .
 ```
 
 run 
 
 ```
-sudo docker run --gpus all  -it genesys:latest uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
+sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
 ```
 
 
