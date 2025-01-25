@@ -1,25 +1,46 @@
 import docker
-from pydantic import BaseModel, Field
-from typing import List, Dict
 import io
 import tarfile
 import uuid
 import re
 
-class CodeTestsVerification(BaseModel):
-    type: str = Field("code_tests")
-    language: str
-    test_cases: List[Dict]
-    
-def extract_code(response: str) -> str:
-    code_blocks = re.findall(r'```(?:\w+)?\n(.*?)```', response, re.DOTALL)
-    
-    if code_blocks:
-        return code_blocks[-1].strip()
-    else:
-        return None
+# We keep a global dictionary for our containers
+CONTAINERS = {}
 
-def copy_to_container(container, dst, content):
+def init_containers():
+    docker_client = docker.from_env()
+    
+    CONTAINERS["Python"] = docker_client.containers.run(
+        "python:3.9",
+        command="sleep infinity",
+        detach=True
+    )
+    
+    CONTAINERS["Rust"] = docker_client.containers.run(
+        "rust:latest",
+        command="sleep infinity",
+        detach=True
+    )
+    
+    CONTAINERS["C++"] = docker_client.containers.run(
+        "gcc:latest",
+        command="sleep infinity",
+        detach=True
+    )
+    
+    CONTAINERS["Javascript"] = docker_client.containers.run(
+        "node:latest",
+        command="sleep infinity",
+        detach=True
+    )
+
+def close_containers():
+    for lang, container in CONTAINERS.items():
+        container.stop()
+        container.remove()
+    CONTAINERS.clear()
+
+def copy_to_container(container, dst, content: str):
     data = io.BytesIO()
     with tarfile.TarFile(fileobj=data, mode='w') as tf:
         tar_info = tarfile.TarInfo(name=dst)
@@ -27,154 +48,112 @@ def copy_to_container(container, dst, content):
         tf.addfile(tar_info, io.BytesIO(content.encode('utf-8')))
 
     data.seek(0)
-    
     container.put_archive("/", data)
-    
-def execute_python(code, inputs, docker_client):
-    
-    code_filename = f"code_{uuid.uuid4().hex}.py"
-    input_filename = f"input_{uuid.uuid4().hex}.txt"
 
-    container = docker_client.containers.create(
-        image="python:3.9",
-        command="sleep infinity", 
-        tty=False,
-        stdin_open=False
-    )
-    container.start()
+def extract_code(response: str) -> str:
+    code_blocks = re.findall(r'```(?:\w+)?\n(.*?)```', response, re.DOTALL)
+    if code_blocks:
+        return code_blocks[-1].strip()
+    else:
+        return None
 
-    copy_to_container(container, code_filename, code)
-    copy_to_container(container, input_filename, inputs)
+def _verify_compiled_code(container, code, test_cases, language):
+    if language == "C++":
+        source_filename = f"main_{uuid.uuid4().hex}.cpp"
+        compile_cmd = f"g++ {source_filename} -o main"
+        run_binary = "./main"
+    elif language == "Rust":
+        source_filename = f"main_{uuid.uuid4().hex}.rs"
+        compile_cmd = f"rustc {source_filename} -o main"
+        run_binary = "./main"
+    else:
+        # Shouldn't happen if we call this only for Rust/C++
+        return 0.0
 
-    run_cmd = ["sh", "-c", f"python {code_filename} < {input_filename}"]
-    run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
-    output = run_result.output.decode()
-
-    container.stop()
-    container.remove()
-
-    return output
-
-def execute_rust(code, inputs, docker_client):
-    code_filename = f"main_{uuid.uuid4().hex}.rs"
-    input_filename = f"input_{uuid.uuid4().hex}.txt"
-
-    container = docker_client.containers.create(
-        image="rust:latest",
-        command="sleep infinity",
-        tty=False,
-        stdin_open=False
-    )
-    
-    container.start()
-
-    copy_to_container(container, code_filename, code)
-    copy_to_container(container, input_filename, inputs)
-
-    compile_cmd = f"rustc {code_filename} -o main"
+    # Copy source
+    copy_to_container(container, source_filename, code)
+    # Compile
     compile_result = container.exec_run(cmd=compile_cmd, stdout=True, stderr=True)
     if compile_result.exit_code != 0:
         error_output = compile_result.output.decode()
-        container.stop()
-        container.remove()
-        return f"Compilation Error:\n{error_output}"
+        print("Compilation Error:\n", error_output)
+        return 0.0
 
-    run_cmd = ["sh", "-c", f"./main < {input_filename}"]
-    run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
-    output = run_result.output.decode()
+    passed_tests = 0
+    total_tests = len(test_cases)
 
-    container.stop()
-    container.remove()
+    for test in test_cases:
+        input_filename = f"input_{uuid.uuid4().hex}.txt"
+        copy_to_container(container, input_filename, test["input"])
 
-    return output
+        run_cmd = ["sh", "-c", f"{run_binary} < {input_filename}"]
+        run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
+        output = run_result.output.decode()
 
-def execute_cpp(code, inputs, docker_client):
-    code_filename = f"main_{uuid.uuid4().hex}.cpp"
-    input_filename = f"input_{uuid.uuid4().hex}.txt"
+        if output.strip() == test["output"].strip():
+            passed_tests += 1
 
-    container = docker_client.containers.create(
-        image="gcc:latest",
-        command="sleep infinity",
-        tty=False,
-        stdin_open=False
-    )
-    container.start()
+    return passed_tests / total_tests
 
+def _verify_interpreted_code(container, code, test_cases, language):
+    """
+    Copy code once, then run multiple times with different inputs.
+    """
+    if language == "Python":
+        code_filename = f"code_{uuid.uuid4().hex}.py"
+        run_cmd_template = "python {code_file} < {input_file}"
+    elif language == "Javascript":
+        code_filename = f"main_{uuid.uuid4().hex}.js"
+        run_cmd_template = "node {code_file} < {input_file}"
+    else:
+        return 0.0
+
+    # Copy code once
     copy_to_container(container, code_filename, code)
-    copy_to_container(container, input_filename, inputs)
 
-    compile_cmd = f"g++ {code_filename} -o main"
-    compile_result = container.exec_run(cmd=compile_cmd, stdout=True, stderr=True)
-    if compile_result.exit_code != 0:
-        error_output = compile_result.output.decode()
-        container.stop()
-        container.remove()
-        return f"Compilation Error:\n{error_output}"
+    passed_tests = 0
+    total_tests = len(test_cases)
 
-    run_cmd = ["sh", "-c", f"./main < {input_filename}"]
-    run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
-    output = run_result.output.decode()
+    for test in test_cases:
+        input_filename = f"input_{uuid.uuid4().hex}.txt"
+        copy_to_container(container, input_filename, test["input"])
 
-    container.stop()
-    container.remove()
+        run_cmd_str = run_cmd_template.format(
+            code_file=code_filename,
+            input_file=input_filename
+        )
+        run_cmd = ["sh", "-c", run_cmd_str]
+        run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
+        output = run_result.output.decode()
 
-    return output
-        
-def execute_javascript(code, inputs, docker_client):
-    code_filename = f"main_{uuid.uuid4().hex}.js"
-    input_filename = f"input_{uuid.uuid4().hex}.txt"
+        if output.strip() == test["output"].strip():
+            passed_tests += 1
 
-    container = docker_client.containers.create(
-        image="node:latest",
-        command="sleep infinity",
-        tty=False,
-        stdin_open=False
-    )
-    container.start()
+    return passed_tests / total_tests
 
-    copy_to_container(container, code_filename, code)
-    copy_to_container(container, input_filename, inputs)
-
-    run_cmd = ["sh", "-c", f"node {code_filename} < {input_filename}"]
-    run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
-    output = run_result.output.decode()
-
-    container.stop()
-    container.remove()
-
-    return output
-    
 def verify_code(response: str, test_cases, language):
     code = extract_code(response)
     if code is None:
-        return 0
-        
-    docker_client = docker.from_env()
-    
-    language_executors = {
-        "Python": execute_python,
-        "Rust": execute_rust,
-        "C++": execute_cpp,
-        "Javascript": execute_javascript,
-    }
-    
-    executor = language_executors.get(language)
-    
-    passed_tests = 0
-    total_tests = len(test_cases)
-    
-    for test in test_cases:
-        output = executor(code, test["input"], docker_client)
-        print("output", output)
-        print("input", test["input"])
-        if output.strip() == test["output"].strip():
-            passed_tests += 1
-    
-    return passed_tests/total_tests    
-        
-    
-    
+        return 0.0
+
+    if language not in CONTAINERS:
+        print(f"No container found for language: {language}")
+        return 0.0
+
+    container = CONTAINERS[language]
+
+    if language in ["C++", "Rust"]:
+        return _verify_compiled_code(container, code, test_cases, language)
+    elif language in ["Python", "Javascript"]:
+        return _verify_interpreted_code(container, code, test_cases, language)
+    else:
+        print("Unsupported language:", language)
+        return 0.0
+
+
 if __name__ == '__main__':
+    init_containers()
+    
     code_samples = [
         """
 Here's a Python solution to the problem:
@@ -384,21 +363,28 @@ rl.on('close', () => {
 
 This JavaScript implementation should work correctly for the given problem.
         """
-    ]
+    ]*10
         
     test_cases = [
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}],
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}],
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}],
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]
-    ]
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10
+    ]*10
     
-    languages = ["Python", "C++", "Rust", "Javascript"]
+    languages = ["Python", "C++", "Rust", "Javascript"]*25
     
+    import time
+    
+    start = time.time()
     for c, t, l in zip(code_samples, test_cases, languages):
         print(f"\n\n### Testing for {l} ###")
         score = verify_code(c, t, l)
         print(score)
+    end = time.time()
+    
+    print("time", end-start)
+        
+    close_containers()
     
     
-
