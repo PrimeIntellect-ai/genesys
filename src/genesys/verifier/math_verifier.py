@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
 
+
 class MathGroundTruthVerification(BaseModel):
     type: str = Field("math_groundtruth")
     ground_truth: str
-    
+
 
 """
 Math verification utils from https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/minerva_math/utils.py
@@ -15,6 +16,7 @@ import sympy
 import json
 from sympy.parsing.latex import parse_latex
 from typing import Optional
+
 
 def verify_math(model_output, ground_truth_answer):
     raw_answer = model_output
@@ -419,7 +421,7 @@ def hendrycks_is_equiv(str1, str2, verbose=False):
         return ss1 == ss2
     except Exception:
         return str1 == str2
-    
+
 
 def repeat_elements(lst, n):
     return [item for item in lst for _ in range(n)]
@@ -432,17 +434,14 @@ def save_batch_results(batch_results, results_file):
             f.write("\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     responses = [
         "Since the initial side of angle $\\alpha$ lies on the ray $3x-4y=0$ (where $x<0$), we can take point $P(-4, -3)$ on the ray. Then, $r=|OP|=\\sqrt{(-4)^2+(-3)^2}=\\sqrt{25}=5$, thus, $\\sin\\alpha - \\cos\\alpha = \\frac{-3}{5} - \\frac{-4}{5} = -\\frac{3}{5} + \\frac{4}{5} = \\frac{1}{5}$, Therefore, the answer is: $\\boxed{\\frac{1}{5}}$ This problem is solved by applying the definition of trigonometric functions. The key to solving this problem is to use the definition of trigonometric functions to calculate their values.",
-        "First, compute $f(-3)$: $f(-3) = (-3)^3 - 1 = -27 - 1 = -28$. Next, substitute $-28$ into $g(x)$: $g(-28) = 3(-28)^2 + 3(-28) + 1$, $= 3 \\cdot 784 - 84 + 1$, $= 2352 - 84 + 1$, $= 2369 - 84$, $= 2285$. So, $g(f(-3)) = 2285$. Our final answer is $\\boxed{2285}$."
+        "First, compute $f(-3)$: $f(-3) = (-3)^3 - 1 = -27 - 1 = -28$. Next, substitute $-28$ into $g(x)$: $g(-28) = 3(-28)^2 + 3(-28) + 1$, $= 3 \\cdot 784 - 84 + 1$, $= 2352 - 84 + 1$, $= 2369 - 84$, $= 2285$. So, $g(f(-3)) = 2285$. Our final answer is $\\boxed{2285}$.",
     ]
-    
-    ground_truths = [
-        "\\frac{1}{5}",
-        "2285"
-    ]
-        
+
+    ground_truths = ["\\frac{1}{5}", "2285"]
+
     for r, gt in zip(responses, ground_truths):
         print("input", r, "gt", gt)
         score = int(verify_math(r, gt))

@@ -6,40 +6,28 @@ import re
 from typing import List, Dict
 from pydantic import BaseModel, Field
 
+
 class CodeTestsVerification(BaseModel):
     type: str = Field("code_tests")
     language: str
     test_cases: List[Dict]
 
+
 # We keep a global dictionary for our containers
 CONTAINERS = {}
 
+
 def init_containers():
     docker_client = docker.from_env()
-    
-    CONTAINERS["Python"] = docker_client.containers.run(
-        "python:3.9",
-        command="sleep infinity",
-        detach=True
-    )
-    
-    CONTAINERS["Rust"] = docker_client.containers.run(
-        "rust:latest",
-        command="sleep infinity",
-        detach=True
-    )
-    
-    CONTAINERS["C++"] = docker_client.containers.run(
-        "gcc:latest",
-        command="sleep infinity",
-        detach=True
-    )
-    
-    CONTAINERS["Javascript"] = docker_client.containers.run(
-        "node:latest",
-        command="sleep infinity",
-        detach=True
-    )
+
+    CONTAINERS["Python"] = docker_client.containers.run("python:3.9", command="sleep infinity", detach=True)
+
+    CONTAINERS["Rust"] = docker_client.containers.run("rust:latest", command="sleep infinity", detach=True)
+
+    CONTAINERS["C++"] = docker_client.containers.run("gcc:latest", command="sleep infinity", detach=True)
+
+    CONTAINERS["Javascript"] = docker_client.containers.run("node:latest", command="sleep infinity", detach=True)
+
 
 def close_containers():
     for lang, container in CONTAINERS.items():
@@ -47,22 +35,25 @@ def close_containers():
         container.remove()
     CONTAINERS.clear()
 
+
 def copy_to_container(container, dst, content: str):
     data = io.BytesIO()
-    with tarfile.TarFile(fileobj=data, mode='w') as tf:
+    with tarfile.TarFile(fileobj=data, mode="w") as tf:
         tar_info = tarfile.TarInfo(name=dst)
         tar_info.size = len(content)
-        tf.addfile(tar_info, io.BytesIO(content.encode('utf-8')))
+        tf.addfile(tar_info, io.BytesIO(content.encode("utf-8")))
 
     data.seek(0)
     container.put_archive("/", data)
 
+
 def extract_code(response: str) -> str:
-    code_blocks = re.findall(r'```(?:\w+)?\n(.*?)```', response, re.DOTALL)
+    code_blocks = re.findall(r"```(?:\w+)?\n(.*?)```", response, re.DOTALL)
     if code_blocks:
         return code_blocks[-1].strip()
     else:
         return None
+
 
 def _verify_compiled_code(container, code, test_cases, language):
     if language == "C++":
@@ -102,6 +93,7 @@ def _verify_compiled_code(container, code, test_cases, language):
 
     return passed_tests / total_tests
 
+
 def _verify_interpreted_code(container, code, test_cases, language):
     """
     Copy code once, then run multiple times with different inputs.
@@ -125,10 +117,7 @@ def _verify_interpreted_code(container, code, test_cases, language):
         input_filename = f"input_{uuid.uuid4().hex}.txt"
         copy_to_container(container, input_filename, test["input"])
 
-        run_cmd_str = run_cmd_template.format(
-            code_file=code_filename,
-            input_file=input_filename
-        )
+        run_cmd_str = run_cmd_template.format(code_file=code_filename, input_file=input_filename)
         run_cmd = ["sh", "-c", run_cmd_str]
         run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
         output = run_result.output.decode()
@@ -137,6 +126,7 @@ def _verify_interpreted_code(container, code, test_cases, language):
             passed_tests += 1
 
     return passed_tests / total_tests
+
 
 def verify_code(response: str, test_cases, language):
     code = extract_code(response)
@@ -158,9 +148,9 @@ def verify_code(response: str, test_cases, language):
         return 0.0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     init_containers()
-    
+
     code_samples = [
         """
 Here's a Python solution to the problem:
@@ -369,29 +359,27 @@ rl.on('close', () => {
 ```
 
 This JavaScript implementation should work correctly for the given problem.
-        """
-    ]*10
-        
+        """,
+    ] * 10
+
     test_cases = [
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10,
-        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}]*10
-    ]*10
-    
-    languages = ["Python", "C++", "Rust", "Javascript"]*25
-    
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
+        [{"input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 10,
+    ] * 10
+
+    languages = ["Python", "C++", "Rust", "Javascript"] * 25
+
     import time
-    
+
     start = time.time()
     for c, t, l in zip(code_samples, test_cases, languages):
         print(f"\n\n### Testing for {l} ###")
         score = verify_code(c, t, l)
         print(score)
     end = time.time()
-    
-    print("time", end-start)
-        
+
+    print("time", end - start)
+
     close_containers()
-    
-    
