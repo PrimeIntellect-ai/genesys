@@ -24,6 +24,15 @@ This is a short run to test if the repo is installed correctly
 uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
 ```
 
+For pushing the data to s3/gcp bucket you need to have a credentials (.json) downloaded locally and do 
+
+
+
+```
+export GOOGLE_APPLICATION_CREDENTIALS="/root/creds.json"
+uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
+```
+
 for dev setup:
 
 ```
