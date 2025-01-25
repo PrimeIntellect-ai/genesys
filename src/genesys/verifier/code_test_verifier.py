@@ -163,13 +163,12 @@ def verify_python_call_based_code(container, user_code: str, test_cases: List[Di
       def computeSum(x, y): return x+y
     """
 
-    injection = "from typing import List, Dict, Set, Tuple, Union, Optional\n" # often starter code is typed on leetcode
+    injection = "from typing import List, Dict, Set, Tuple, Union, Optional\n" # often starter has type hints
     user_code = injection + user_code
 
     passed_tests = 0
     total_tests = len(test_cases)
 
-    import uuid
     code_filename = f"user_code_{uuid.uuid4().hex}.py"
     copy_to_container(container, code_filename, user_code)
 
