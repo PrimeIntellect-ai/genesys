@@ -3,6 +3,13 @@ import io
 import tarfile
 import uuid
 import re
+from typing import List, Dict
+from pydantic import BaseModel, Field
+
+class CodeTestsVerification(BaseModel):
+    type: str = Field("code_tests")
+    language: str
+    test_cases: List[Dict]
 
 # We keep a global dictionary for our containers
 CONTAINERS = {}
