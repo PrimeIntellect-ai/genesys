@@ -21,7 +21,7 @@ uv sync --extra sglang
 This is a short run to test if the repo is installed correctly
 
 ```
-uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
+uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 8 --sample-per-file 8
 ```
 
 For pushing the data to s3/gcp bucket you need to have a credentials (.json) downloaded locally and do 
@@ -30,7 +30,7 @@ For pushing the data to s3/gcp bucket you need to have a credentials (.json) dow
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS="/root/creds.json"
-uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 2
+uv run python src/genesys/generate.py --name_model Qwen/Qwen2.5-Coder-0.5B --num_gpus 1 --batch_size 8 --max_samples 8 --sample-per-file 8
 ```
 
 for dev setup:
