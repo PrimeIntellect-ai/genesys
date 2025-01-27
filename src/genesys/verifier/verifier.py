@@ -5,7 +5,7 @@ from genesys.verifier.math_verifier import MathGroundTruthVerification, verify_m
 VerificationInfo = Union[MathGroundTruthVerification, CodeTestsVerification]
 
 
-def verify(instructions: List[str], responses: List[str], verification_data: List[VerificationInfo]):
+def verify(responses: List[str], verification_data: List[VerificationInfo], task_types: List[str]):
     has_code_tests = any(verification.type == "code_tests" for verification in verification_data)
     if has_code_tests:
         init_containers()
