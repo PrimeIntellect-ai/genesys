@@ -11,11 +11,11 @@ def verify(responses: List[str], verification_data: List[VerificationInfo], task
         init_containers()
 
     scores = []
-    for instruction, response, verification in zip(instructions, responses, verification_data):
-        if verification.type == "code_tests":
+    for response, verification, task in zip(responses, verification_data, task_types):
+        if task == "verifiable_code":
             result = verify_code(response, verification.test_cases, verification.language)
 
-        elif verification.type == "math_groundtruth":
+        elif task == "verifiable_math":
             result = verify_math(response, verification.ground_truth)
 
         else:
