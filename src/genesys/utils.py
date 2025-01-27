@@ -3,7 +3,8 @@ import os
 from google.cloud import storage
 import subprocess
 
-H200_FULL_NODE_GPU_MEMORY: int = 1120000 # rounded value GPU memory in MB 140*8*1000, TODO: provide exact value
+H200_FULL_NODE_GPU_MEMORY: int = 1_120_000 # rounded value GPU memory in MB 140*8*1000, TODO: provide exact value
+H100_FULL_NODE_GPU_MEMORY: int = 624_000 # rounded value GPU memory in MB 78*8*1000, TODO: provide exact value
 
 def repeat_elements(lst, n):
     return [item for item in lst for _ in range(n)]
