@@ -1,7 +1,7 @@
 import json
 import os
 from google.cloud import storage
-
+import subprocess
 
 def repeat_elements(lst, n):
     return [item for item in lst for _ in range(n)]
@@ -43,3 +43,29 @@ def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None
             print(f"Successfully uploaded {results_file} to GCP bucket")
         except Exception as e:
             print(f"Error uploading to GCP: {str(e)}")
+
+
+def get_gpu_memory():
+    """
+    Retrieve the total GPU memory available across all GPUs in the system in megabytes
+
+    This function uses the `nvidia-smi` command to query the total memory
+    available for each GPU installed in the system. The memory values are 
+    summed up to provide the total memory in megabytes (MB).
+
+    Returns:
+        int: The total GPU memory in MB if successful.
+        None: If an error occurs (e.g., `nvidia-smi` not found or other exceptions).
+
+    Example:
+        >>> get_gpu_memory()
+        24576  # Total GPU memory in MB across all GPUs
+    """
+    try:
+        output = subprocess.check_output(["nvidia-smi", "--query-gpu=memory.total", "--format=csv,noheader,nounits"])
+        memory_list = [int(x) for x in output.decode().strip().split('\n')]
+        total_memory_mb = sum(memory_list)
+        return total_memory_mb
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
