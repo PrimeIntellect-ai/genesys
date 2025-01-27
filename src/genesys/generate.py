@@ -17,6 +17,7 @@ class Config(BaseConfig):
     num_gpus: int = 8
     temperature: float = 0.9
     batch_size: int = 10_000
+    # min_p: float = 0.0
     max_samples: int | None = None
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
