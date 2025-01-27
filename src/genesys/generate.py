@@ -1,4 +1,3 @@
-import itertools
 from pydantic import model_validator
 from pydantic_config import BaseConfig, parse_argv
 import sglang as sgl

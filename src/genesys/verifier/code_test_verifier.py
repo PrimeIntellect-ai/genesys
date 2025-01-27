@@ -5,7 +5,7 @@ import uuid
 import re
 import ast
 from typing import List, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class CodeTestsVerification(BaseModel):
     language: str

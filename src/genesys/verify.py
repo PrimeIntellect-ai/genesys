@@ -1,6 +1,7 @@
 import json
 import ast
 from genesys.verifier.verifier import verify
+from pydantic_config import BaseConfig, parse_argv
 
 class Config(BaseConfig):
     file: str
