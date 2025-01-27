@@ -1,6 +1,7 @@
 import itertools
 from pydantic import model_validator
 from pydantic_config import BaseConfig, parse_argv
+import torch
 import sglang as sgl
 from datasets import load_dataset
 from tqdm import tqdm
@@ -60,7 +61,7 @@ def main(config: Config):
         ]
         batch_messages = repeat_elements(batch_messages, config.num_responses_per_question)
         batch_inputs = tokenizer.apply_chat_template(batch_messages, tokenize=False, add_generation_prompt=True)
-        batch_output = llm.generate(batch_inputs, sampling_params)
+        batch_output = llm.generate(batch_inputs, sampling_params, return_hidden_states=True, top_hidden_states_num=8)
 
         for j, out in enumerate(batch_output):
             result = dict()
@@ -68,6 +69,10 @@ def main(config: Config):
             result["response"] = out["text"]
             result["problem_id"] = int(batch_ids[j])
             result["ground_truth"] = batch_ground_truths[j]
+
+            hidden_states_val = torch.Tensor(out["meta_info"]["output_top_hidden_states_val"])
+            hidden_states_idx = torch.Tensor(out["meta_info"]["output_top_hidden_states_idx"])
+            print(f"{hidden_states_val.shape=}, {hidden_states_idx.shape=}")
 
             all_results.append(result)
 
