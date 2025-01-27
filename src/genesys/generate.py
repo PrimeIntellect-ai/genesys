@@ -22,6 +22,8 @@ class Config(BaseConfig):
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
 
+    top_hidden_states_num: int = 8
+
     @model_validator(mode="after")
     def check_batch_size(self):
         if self.sample_per_file < self.batch_size:
@@ -34,7 +36,9 @@ class Config(BaseConfig):
 def main(config: Config):
     gcp_bucket = GcpBucket(config.gcp_bucket) if config.gcp_bucket is not None else None
 
-    llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
+    llm = sgl.Engine(
+        model_path=config.name_model, tp_size=config.num_gpus, top_hidden_states_nums=config.top_hidden_states_num
+    )
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
     math_dataset = load_dataset("PrimeIntellect/NuminaMath-groundtruth")["train"]
@@ -61,7 +65,7 @@ def main(config: Config):
         ]
         batch_messages = repeat_elements(batch_messages, config.num_responses_per_question)
         batch_inputs = tokenizer.apply_chat_template(batch_messages, tokenize=False, add_generation_prompt=True)
-        batch_output = llm.generate(batch_inputs, sampling_params, return_hidden_states=True, top_hidden_states_num=8)
+        batch_output = llm.generate(batch_inputs, sampling_params, return_hidden_states=True)
 
         for j, out in enumerate(batch_output):
             result = dict()
