@@ -27,7 +27,7 @@ def main(config: Config):
         d["score"] = s
         all_results.append(d)
         
-    out_file = f"{config.file.split('-')[-2]}_verified.jsonl"
+    out_file = f"{config.file.split('.json')[-2]}_verified.jsonl"
     with open(out_file, "w") as f:
         for result in all_results:
             json.dump(result, f)
