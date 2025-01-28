@@ -22,7 +22,7 @@ class Config(BaseConfig):
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
 
-    top_hidden_states_num: int = 8
+    top_hidden_states_num: int = -1  # -1 mean all value
 
     @model_validator(mode="after")
     def check_batch_size(self):
@@ -75,7 +75,9 @@ def main(config: Config):
             result["ground_truth"] = batch_ground_truths[j]
 
             hidden_states_val = torch.Tensor(out["meta_info"]["output_top_hidden_states_val"])
-            hidden_states_idx = torch.Tensor(out["meta_info"]["output_top_hidden_states_idx"])
+
+            if "output_top_hidden_states_idx" in out["meta_info"]:
+                hidden_states_idx = torch.Tensor(out["meta_info"]["output_top_hidden_states_idx"])
             print(f"{hidden_states_val.shape=}, {hidden_states_idx.shape=}")
 
             all_results.append(result)
