@@ -1,31 +1,28 @@
-import itertools
 from pydantic import model_validator
 from pydantic_config import BaseConfig, parse_argv
+from genesys.data import DataLoaderGenesys, DataConfig
 import sglang as sgl
-from datasets import load_dataset
-from tqdm import tqdm
 from transformers import AutoTokenizer
-from genesys.utils import GcpBucket, repeat_elements, save_batch_results
+from genesys.utils import GcpBucket, save_batch_results, generate_short_id
 import uuid
-
-SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 
 
 class Config(BaseConfig):
     name_model: str = "Qwen/QwQ-32B-Preview"
-    num_responses_per_question: int = 1
     num_gpus: int = 8
+    out_file_prefix: str = "out"
+    max_tokens: int = 32_768
     temperature: float = 0.9
-    batch_size: int = 10_000
-    max_samples: int | None = None
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
 
+    data: DataConfig = DataConfig()
+
     @model_validator(mode="after")
     def check_batch_size(self):
-        if self.sample_per_file < self.batch_size:
+        if self.sample_per_file < self.data.batch_size:
             raise ValueError("sample_per_file must be greater than or equal to batch_size")
-        if self.max_samples is not None and self.max_samples < self.sample_per_file:
+        if self.data.max_samples is not None and self.data.max_samples < self.sample_per_file:
             raise ValueError("max_samples must be greater than or equal to sample_per_file")
         return self
 
@@ -36,43 +33,28 @@ def main(config: Config):
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
-    math_dataset = load_dataset("PrimeIntellect/NuminaMath-groundtruth")["train"]
-    math_dataset = math_dataset.add_column("problem_id", range(len(math_dataset)))
+    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
 
     sampling_params = dict(temperature=config.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
 
-    max_samples = config.max_samples if config.max_samples is not None else len(math_dataset)
-
     all_results = []
 
-    for i in tqdm(range(0, min(max_samples, len(math_dataset)), config.batch_size), desc="Generating data"):
-        batch = math_dataset[i : min(i + config.batch_size, len(math_dataset))]
-        batch_ids = list(
-            itertools.chain.from_iterable([[idx] * config.num_responses_per_question for idx in batch["problem_id"]])
-        )
-        batch_ground_truths = list(
-            itertools.chain.from_iterable([[gt] * config.num_responses_per_question for gt in batch["ground_truth"]])
-        )
+    for batch_inputs, batch in dataloader:
+        responses = llm.generate(batch_inputs, sampling_params)
 
-        batch_messages = [
-            [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": problem}]
-            for problem in batch["problem"]
-        ]
-        batch_messages = repeat_elements(batch_messages, config.num_responses_per_question)
-        batch_inputs = tokenizer.apply_chat_template(batch_messages, tokenize=False, add_generation_prompt=True)
-        batch_output = llm.generate(batch_inputs, sampling_params)
+        for batch_element, response in zip(batch, responses):
+            batch_element["llm_response"] = response["text"]
+            batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
+            batch_element["model_name"] = config.name_model
+            batch_element["generation_config"] = dict(temperature=config.temperature)
+            # print(f"type(batch_element): {type(batch_element)}")
+            # print(f"type(response): {type(response)}")
+            # print(response)
 
-        for j, out in enumerate(batch_output):
-            result = dict()
-            result["prompt"] = batch_messages[j][1]["content"]
-            result["response"] = out["text"]
-            result["problem_id"] = int(batch_ids[j])
-            result["ground_truth"] = batch_ground_truths[j]
-
-            all_results.append(result)
+            all_results.append(batch_element)
 
         if len(all_results) >= config.sample_per_file:
-            file_name = f"out_{uuid.uuid4()}.jsonl"
+            file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.jsonl"
             save_batch_results(all_results, file_name, gcp_bucket)
             all_results = []
 

@@ -629,8 +629,8 @@ dependencies = [
     { name = "datasets" },
     { name = "google-cloud-storage" },
     { name = "pydantic-config" },
+    { name = "rich" },
     { name = "torch" },
-    { name = "tqdm" },
     { name = "transformers" },
 ]
 
@@ -665,11 +665,11 @@ requires-dist = [
     { name = "google-cloud-storage" },
     { name = "psutil", marker = "extra == 'sglang'" },
     { name = "pydantic-config", git = "https://github.com/samsja/pydantic_config.git?rev=74c94ee" },
+    { name = "rich" },
     { name = "setuptools", marker = "extra == 'sglang'" },
     { name = "sglang", extras = ["srt"], marker = "extra == 'sglang'", specifier = ">=0.4.1" },
     { name = "sympy", marker = "extra == 'sglang'" },
     { name = "torch", specifier = ">=2.4.1" },
-    { name = "tqdm" },
     { name = "transformers", specifier = ">=4.44.2" },
     { name = "uvicorn", marker = "extra == 'sglang'" },
     { name = "uvloop", marker = "extra == 'sglang'" },
@@ -3446,7 +3446,7 @@ name = "triton"
 version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "filelock", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "filelock", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/98/29/69aa56dc0b2eb2602b553881e34243475ea2afd9699be042316842788ff5/triton-3.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6b0dd10a925263abbe9fa37dcde67a5e9b2383fc269fdf59f5657cac38c5d1d8", size = 209460013 },

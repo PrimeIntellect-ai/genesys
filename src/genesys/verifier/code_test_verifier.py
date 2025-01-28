@@ -5,12 +5,6 @@ import uuid
 import re
 import ast
 from typing import List, Dict
-from pydantic import BaseModel, Field
-
-class CodeTestsVerification(BaseModel):
-    type: str = Field("code_tests")
-    language: str
-    test_cases: List[Dict]
 
 
 HARNESS_CODE_METHOD = """
@@ -38,13 +32,13 @@ def init_containers():
     """
     docker_client = docker.from_env()
 
-    CONTAINERS["Python"] = docker_client.containers.run("python:3.9", command="sleep infinity", detach=True)
+    CONTAINERS["python"] = docker_client.containers.run("python:3.9", command="sleep infinity", detach=True)
 
-    CONTAINERS["Rust"] = docker_client.containers.run("rust:latest", command="sleep infinity", detach=True)
+    CONTAINERS["rust"] = docker_client.containers.run("rust:latest", command="sleep infinity", detach=True)
 
-    CONTAINERS["C++"] = docker_client.containers.run("gcc:latest", command="sleep infinity", detach=True)
+    CONTAINERS["cpp"] = docker_client.containers.run("gcc:latest", command="sleep infinity", detach=True)
 
-    CONTAINERS["Javascript"] = docker_client.containers.run("node:latest", command="sleep infinity", detach=True)
+    CONTAINERS["javascript"] = docker_client.containers.run("node:latest", command="sleep infinity", detach=True)
 
 
 def close_containers():
@@ -54,7 +48,10 @@ def close_containers():
     CONTAINERS.clear()
 
 
-def copy_to_container(container, dst, content: str):
+def copy_to_container(container, dst, content):
+    if not isinstance(content, str):
+        print("COntent", content)
+        
     data = io.BytesIO()
     with tarfile.TarFile(fileobj=data, mode="w") as tf:
         tar_info = tarfile.TarInfo(name=dst)
@@ -65,7 +62,10 @@ def copy_to_container(container, dst, content: str):
     container.put_archive("/", data)
 
 
-def extract_code(response: str) -> str:
+def extract_code(response) -> str:
+    if not isinstance(response, str):
+        print("code response is not str:", response)
+        
     code_blocks = re.findall(r"```(?:\w+)?\n(.*?)```", response, re.DOTALL)
     if code_blocks:
         return code_blocks[-1].strip()
@@ -109,11 +109,11 @@ def detect_callable_name(user_code: str, fn_name: str):
 
 
 def verify_compiled_code(container, code, test_cases, language):
-    if language == "C++":
+    if language == "cpp":
         source_filename = f"main_{uuid.uuid4().hex}.cpp"
         compile_cmd = f"g++ {source_filename} -o main"
         run_binary = "./main"
-    elif language == "Rust":
+    elif language == "rust":
         source_filename = f"main_{uuid.uuid4().hex}.rs"
         compile_cmd = f"rustc {source_filename} -o main"
         run_binary = "./main"
@@ -133,13 +133,17 @@ def verify_compiled_code(container, code, test_cases, language):
 
     for test in test_cases:
         input_filename = f"input_{uuid.uuid4().hex}.txt"
-        copy_to_container(container, input_filename, test["input"])
+        copy_to_container(container, input_filename, str(test["input"]))
 
         run_cmd = ["sh", "-c", f"{run_binary} < {input_filename}"]
         run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
         output = run_result.output.decode()
+        
+        normalized_output = '\n'.join(line.strip() for line in output.strip().split('\n'))
+        normalized_expected = '\n'.join(line.strip() for line in str(test["output"]).strip().split('\n'))
 
-        if output.strip() == test["output"].strip():
+        if normalized_output == normalized_expected:
+
             passed_tests += 1
 
     return passed_tests / total_tests
@@ -213,10 +217,10 @@ def verify_interpreted_code(container, code, test_cases, language):
     """
     Copy code once, then run multiple times with different inputs.
     """
-    if language == "Python":
+    if language == "python":
         code_filename = f"code_{uuid.uuid4().hex}.py"
         run_cmd_template = "python {code_file} < {input_file}"
-    elif language == "Javascript":
+    elif language == "javascript":
         code_filename = f"main_{uuid.uuid4().hex}.js"
         run_cmd_template = "node {code_file} < {input_file}"
     else:
@@ -226,17 +230,20 @@ def verify_interpreted_code(container, code, test_cases, language):
 
     passed_tests = 0
     total_tests = len(test_cases)
-
+    
     for test in test_cases:
         input_filename = f"input_{uuid.uuid4().hex}.txt"
-        copy_to_container(container, input_filename, test["input"])
+        copy_to_container(container, input_filename, str(test["input"]))
 
         run_cmd_str = run_cmd_template.format(code_file=code_filename, input_file=input_filename)
         run_cmd = ["sh", "-c", run_cmd_str]
         run_result = container.exec_run(cmd=run_cmd, stdout=True, stderr=True)
         output = run_result.output.decode()
+        
+        normalized_output = '\n'.join(line.strip() for line in output.strip().split('\n'))
+        normalized_expected = '\n'.join(line.strip() for line in str(test["output"]).strip().split('\n'))
 
-        if output.strip() == test["output"].strip():
+        if normalized_output == normalized_expected:
             passed_tests += 1
 
     return passed_tests / total_tests
@@ -253,16 +260,20 @@ def verify_code(response: str, test_cases, language):
 
     container = CONTAINERS[language]
 
+    #print("language", language)
+    
+    print()
+    
     if all(tc.get("type") == "function_call" for tc in test_cases):
-        if language == "Python":
+        if language == "python":
             return verify_python_call_based_code(container, code, test_cases)
         else:
             print("Call-based code testing not implemented for this language.")
             return 0.0
     else:
-        if language in ["C++", "Rust"]:
+        if language in ["cpp", "rust"]:
             return verify_compiled_code(container, code, test_cases, language)
-        elif language in ["Python", "Javascript"]:
+        elif language in ["python", "javascript"]:
             return verify_interpreted_code(container, code, test_cases, language)
         else:
             print("Unsupported language:", language)
@@ -274,7 +285,7 @@ if __name__ == "__main__":
 
     code_samples = [
         """
-Here's a Python solution to the problem:
+Here's a python solution to the problem:
 
 ```python
 q = int(input())
@@ -303,7 +314,7 @@ for _ in range(q):
 This solution handles the given constraints and should work efficiently.
         """,
         """
-I've implemented a C++ solution for the problem. Here's the code:
+I've implemented a cpp solution for the problem. Here's the code:
 
 ```cpp
 #include <bits/stdc++.h>
@@ -359,10 +370,10 @@ int main() {
 }
 ```
 
-This C++ implementation should solve the problem efficiently.
+This cpp implementation should solve the problem efficiently.
         """,
         """
-For the given problem, here's a Rust implementation that should work:
+For the given problem, here's a rust implementation that should work:
 
 ```rust
 use std::io::{self, BufRead};
@@ -420,7 +431,7 @@ fn main() {
 }
 ```
 
-This Rust code should solve the problem efficiently while handling all the given constraints.
+This rust code should solve the problem efficiently while handling all the given constraints.
         """,
         """
 I've created a JavaScript solution for the problem. Here's the code:
@@ -490,7 +501,7 @@ This JavaScript implementation should work correctly for the given problem.
         [{"type": "stdin_stdout", "input": "3\n2 2 3\n4 3 7\n10 1 9\n", "output": "1\n6\n-1\n"}] * 2,
     ] * 10
 
-    languages = ["Python", "C++", "Rust", "Javascript"] * 2
+    languages = ["python", "cpp", "rust", "javascript"] * 2
     
     
     call_based_codes = [
@@ -540,8 +551,8 @@ Hope it helps
     ]
     
     call_based_languages = [
-        "Python",
-        "Python"
+        "python",
+        "python"
     ]
     
     all_codes = code_samples +  call_based_codes

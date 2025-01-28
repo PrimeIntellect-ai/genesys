@@ -1,10 +1,8 @@
 import json
 import os
+import string
+import random
 from google.cloud import storage
-
-
-def repeat_elements(lst, n):
-    return [item for item in lst for _ in range(n)]
 
 
 class GcpBucket:
@@ -43,3 +41,9 @@ def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None
             print(f"Successfully uploaded {results_file} to GCP bucket")
         except Exception as e:
             print(f"Error uploading to GCP: {str(e)}")
+
+
+def generate_short_id(length=8):
+    """Generate a short random ID."""
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(length))
