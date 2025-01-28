@@ -231,8 +231,6 @@ def verify_interpreted_code(container, code, test_cases, language):
     passed_tests = 0
     total_tests = len(test_cases)
     
-    #print("TEST CASES", test_cases)
-
     for test in test_cases:
         input_filename = f"input_{uuid.uuid4().hex}.txt"
         copy_to_container(container, input_filename, str(test["input"]))
