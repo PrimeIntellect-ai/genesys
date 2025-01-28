@@ -5,12 +5,6 @@ import uuid
 import re
 import ast
 from typing import List, Dict
-from pydantic import BaseModel, Field
-
-class CodeTestsVerification(BaseModel):
-    type: str = Field("code_tests")
-    language: str
-    test_cases: List[Dict]
 
 
 HARNESS_CODE_METHOD = """
@@ -280,10 +274,8 @@ def verify_code(response: str, test_cases, language):
             return 0.0
     else:
         if language in ["cpp", "rust"]:
-            print("COMPILED CODE")
             return verify_compiled_code(container, code, test_cases, language)
         elif language in ["python", "javascript"]:
-            print("INTERPRETED CODE")
             return verify_interpreted_code(container, code, test_cases, language)
         else:
             print("Unsupported language:", language)
