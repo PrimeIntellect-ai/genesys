@@ -1,22 +1,23 @@
+from tqdm import tqdm
 from typing import List, Union
-from genesys.verifier.code_test_verifier import CodeTestsVerification, verify_code, init_containers, close_containers
-from genesys.verifier.math_verifier import MathGroundTruthVerification, verify_math
+from verifier.code_test_verifier import CodeTestsVerification, verify_code, init_containers, close_containers
+from verifier.math_verifier import MathGroundTruthVerification, verify_math
 
 VerificationInfo = Union[MathGroundTruthVerification, CodeTestsVerification]
 
 
 def verify(responses: List[str], verification_data: List[VerificationInfo], task_types: List[str]):
-    has_code_tests = any(verification.type == "code_tests" for verification in verification_data)
+    has_code_tests = any(task_type == "verifiable_code" for task_type in task_types)
     if has_code_tests:
         init_containers()
 
     scores = []
-    for response, verification, task in zip(responses, verification_data, task_types):
+    for response, verification, task in tqdm(zip(responses, verification_data, task_types), total=len(responses), desc="Verifiying"):
         if task == "verifiable_code":
-            result = verify_code(response, verification.test_cases, verification.language)
+            result = verify_code(response, verification["test_cases"], verification["language"])
 
         elif task == "verifiable_math":
-            result = verify_math(response, verification.ground_truth)
+            result = verify_math(response, verification["ground_truth"])
 
         else:
             raise ValueError(f"Unknown verification type: {verification}")

@@ -1,6 +1,7 @@
 import json
 import ast
 from genesys.verifier.verifier import verify
+from pydantic_config import BaseConfig, parse_argv
 
 class Config(BaseConfig):
     file: str
@@ -26,8 +27,11 @@ def main(config: Config):
         d["score"] = s
         all_results.append(d)
         
-    with open("oooo.json", "w") as f:
-        json.dump(all_results, indent=4)
+    out_file = f"{config.file.split('-')[-2]}_verified.jsonl"
+    with open(out_file, "w") as f:
+        for result in all_results:
+            json.dump(result, f)
+            f.write('\n')
     
 if __name__ == "__main__":
     config = Config(**parse_argv())
