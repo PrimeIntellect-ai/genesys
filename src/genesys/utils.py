@@ -3,6 +3,8 @@ import os
 import string
 import random
 from google.cloud import storage
+from queue import Queue
+import threading
 
 
 class GcpBucket:
@@ -17,7 +19,25 @@ class GcpBucket:
         self.bucket = self.client.bucket(self.bucket_name)
         print(f"Initialized GCP bucket: {self.bucket_name}, folder: {self.destination_folder}")
 
-    def push(self, file_name: str):
+        self.upload_queue = Queue()
+        self._start_upload_worker()
+
+    def _start_upload_worker(self):
+        def worker():
+            while True:
+                file_name = self.upload_queue.get()
+                if file_name is None:
+                    break
+                try:
+                    self._push(file_name=file_name)
+                except Exception as e:
+                    print(f"Error uploading {file_name}: {e}")
+                self.upload_queue.task_done()
+
+        self.worker_thread = threading.Thread(target=worker, daemon=True)
+        self.worker_thread.start()
+
+    def _push(self, file_name: str):
         # Create the full destination path including folder
         destination_blob_name = os.path.join(self.destination_folder, os.path.basename(file_name))
         print(f"Uploading {file_name} to gs://{self.bucket_name}/{destination_blob_name}")
@@ -25,6 +45,16 @@ class GcpBucket:
         # Upload the file
         blob = self.bucket.blob(destination_blob_name)
         blob.upload_from_filename(file_name)
+        print(f"Successfully uploaded {file_name} to GCP bucket {self.bucket_name}/{destination_blob_name}")
+
+    def push(self, file_name: str):
+        self.upload_queue.put(file_name)
+
+    def __del__(self):
+        if hasattr(self, "upload_queue"):
+            self.upload_queue.put(None)
+        if hasattr(self, "worker_thread"):
+            self.worker_thread.join()
 
 
 def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None = None):
@@ -38,7 +68,6 @@ def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None
     if gcp_bucket is not None:
         try:
             gcp_bucket.push(results_file)
-            print(f"Successfully uploaded {results_file} to GCP bucket")
         except Exception as e:
             print(f"Error uploading to GCP: {str(e)}")
 
