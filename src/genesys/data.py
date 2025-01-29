@@ -9,7 +9,7 @@ SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think
 
 
 class DataConfig(BaseConfig):
-    path: str = "justus27/verifiable-tasks"
+    path: str = "PrimeIntellect/verifiable-tasks"
     ratio: list[float] | None = None
     max_samples: int | None = None
     batch_size: int = 10_000
