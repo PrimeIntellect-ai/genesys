@@ -6,6 +6,11 @@ from google.cloud import storage
 from queue import Queue
 import threading
 
+from rich.panel import Panel
+from rich.text import Text
+from rich import box
+from rich.console import Console
+
 
 class GcpBucket:
     def __init__(self, gcp_path: str):
@@ -76,3 +81,29 @@ def generate_short_id(length=8):
     """Generate a short random ID."""
     characters = string.ascii_letters + string.digits
     return "".join(random.choice(characters) for _ in range(length))
+
+
+def display_config_panel(console: Console, config):
+    # Create title panel
+    title = Text("Genesys LLM Generator", justify="center")
+    console.print(Panel(title, box=box.ROUNDED, width=70))
+
+    # Create configuration content
+    config_text = Text()
+    config_text.append("\n")  # Initial spacing
+    config_text.append("  Model           ", style="default")
+    config_text.append(f"{config.name_model}\n", style="blue")
+    config_text.append("  GPUs            ", style="default")
+    config_text.append(f"{config.num_gpus}\n", style="green")
+    config_text.append("  Max Tokens      ", style="default")
+    config_text.append(f"{config.max_tokens:,}\n", style="yellow")
+    config_text.append("  Temperature     ", style="default")
+    config_text.append(f"{config.temperature}\n", style="magenta")
+    config_text.append("  Batch Size      ", style="default")
+    config_text.append(f"{config.data.batch_size}\n", style="cyan")
+    config_text.append("  Dataset         ", style="default")
+    config_text.append(f"{config.data.path}\n", style="cyan")
+    config_text.append("\n")  # Final spacing
+
+    # Create configuration panel
+    console.print(Panel(config_text, title="Configuration", box=box.ROUNDED, width=70))
