@@ -113,11 +113,7 @@ class DataLoaderGenesys:
 
                 self.progress_bars.update(self.tasks[current_dataset_index], completed=end)
 
-                a = self._prepare_batch(batch, dataset=self.paths[current_dataset_index])
-
-                print(type(a))
-
-                yield a
+                yield self._prepare_batch(batch, dataset=self.paths[current_dataset_index])
 
                 datasets_sample_counter[current_dataset_index] = end
                 idx += 1
