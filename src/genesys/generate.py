@@ -1,3 +1,4 @@
+import os
 from pydantic import model_validator
 from pydantic_config import BaseConfig, parse_argv
 from genesys.data import DataLoaderGenesys, DataConfig
@@ -10,14 +11,16 @@ import uuid
 class Config(BaseConfig):
     name_model: str = "Qwen/QwQ-32B-Preview"
     num_gpus: int = 8
-    out_file_prefix: str = "out"
     max_tokens: int = 32_768
     temperature: float = 0.9
 
+    data: DataConfig = DataConfig()
+
+    # output file
+    out_file_prefix: str = "out"
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
-
-    data: DataConfig = DataConfig()
+    path_output: str = "output"
 
     @model_validator(mode="after")
     def check_batch_size(self):
@@ -30,6 +33,9 @@ class Config(BaseConfig):
 
 def main(config: Config):
     gcp_bucket = GcpBucket(config.gcp_bucket) if config.gcp_bucket is not None else None
+
+    if not os.path.exists(config.path_output):
+        os.makedirs(config.path_output)
 
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
@@ -53,7 +59,8 @@ def main(config: Config):
 
         if len(all_results) >= config.sample_per_file:
             file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.jsonl"
-            save_batch_results(all_results, file_name, gcp_bucket)
+            file = os.path.join(config.path_output, file_name)
+            save_batch_results(all_results, file, gcp_bucket)
             all_results = []
 
 
