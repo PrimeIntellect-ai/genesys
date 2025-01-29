@@ -15,6 +15,8 @@ class DataConfig(BaseConfig):
     batch_size: int = 10_000
     num_responses_per_question: int = 1
 
+    shuffle: bool = True
+
 
 def repeat_elements(lst, n):
     return [item for item in lst for _ in range(n)]
@@ -39,6 +41,11 @@ class DataLoaderGenesys:
         self.paths = list(config.path.split(","))
 
         datasets = [load_dataset(path)["train"] for path in self.paths]
+
+        if config.shuffle:
+            for dataset in datasets:
+                dataset = dataset.shuffle()
+
         if config.ratio is not None:
             ratio = [float(r) for r in config.ratio.split(",")]
             assert len(ratio) == len(datasets), "Number of paths and ratios must be the same"
