@@ -13,6 +13,7 @@ class Config(BaseConfig):
     out_file_prefix: str = "out"
     max_tokens: int = 32_768
     temperature: float = 0.9
+
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
 
@@ -47,9 +48,6 @@ def main(config: Config):
             batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
             batch_element["model_name"] = config.name_model
             batch_element["generation_config"] = dict(temperature=config.temperature)
-            # print(f"type(batch_element): {type(batch_element)}")
-            # print(f"type(response): {type(response)}")
-            # print(response)
 
             all_results.append(batch_element)
 
