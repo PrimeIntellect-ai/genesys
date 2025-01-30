@@ -1,4 +1,3 @@
-
 """
 Math verification utils from https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/minerva_math/utils.py
 """
@@ -8,6 +7,7 @@ import sympy
 from sympy.parsing.latex import parse_latex
 from typing import Optional
 import json
+
 
 def verify_math(model_output, ground_truth_answer):
     raw_answer = model_output
@@ -43,7 +43,8 @@ def verify_math(model_output, ground_truth_answer):
             matched = True
             break
 
-    return int(matched) # we want to return a score from 0-1, not a boolean. 1 -> correct, 0 -> wrong
+    return int(matched)  # we want to return a score from 0-1, not a boolean. 1 -> correct, 0 -> wrong
+
 
 def last_boxed_only_string(string: str) -> Optional[str]:
     idx = string.rfind("\\boxed")
@@ -197,6 +198,7 @@ def normalize_final_answer(final_answer: str) -> str:
 
     return final_answer
 
+
 def is_equiv(x1: str, x2: str) -> bool:
     """
     x1 and x2 are normalized latex string
@@ -226,7 +228,7 @@ def is_equiv(x1: str, x2: str) -> bool:
                 return False
         except ValueError:
             print(f"Had some trouble simplifying when comparing {x1} and {x2}")
-            
+
     except ImportError as e:
         print(e)
         raise
