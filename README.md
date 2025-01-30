@@ -24,12 +24,10 @@ This is a short run to test if the repo is installed correctly
 uv run python src/genesys/generate.py @ configs/debug.toml
 ```
 
-For pushing the data to s3/gcp bucket you need to have a credentials (.json) downloaded locally and do 
-
-
+For pushing the data to s3/gcp bucket, you have to download a service account key file with the permission to push to your bucket, encode it to base64 and set the encoded file as `GCP_CREDENTIALS_BASE64`. Then you can specify your bucket via the `--gcp_bucket` flag:
 
 ```
-export GOOGLE_APPLICATION_CREDENTIALS="/root/creds.json"
+export GCP_CREDENTIALS_BASE64=$(base64 -w 0 /path/to/your/service-account-key.json)
 uv run python src/genesys/generate.py @ configs/debug.toml --gcp_bucket checkpoints_pi/test_data
 ```
 
