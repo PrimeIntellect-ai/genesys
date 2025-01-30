@@ -9,4 +9,3 @@ path = "PrimeIntellect/verifiable-tasks"
 
 # sampling parameters
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
-top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
