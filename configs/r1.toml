@@ -1,0 +1,12 @@
+name_model = "deepseek-ai/DeepSeek-R1"
+num_gpus = 8
+sample_per_file = 8
+
+[data]
+max_samples = 8
+batch_size = 8 # this value is untested
+path = "PrimeIntellect/verifiable-tasks"
+
+# sampling parameters
+temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
+top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
