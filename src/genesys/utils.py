@@ -2,7 +2,9 @@ import json
 import os
 import string
 import random
+import base64
 from google.cloud import storage
+from google.oauth2 import service_account
 from queue import Queue
 import threading
 
@@ -13,14 +15,17 @@ from rich.console import Console
 
 
 class GcpBucket:
-    def __init__(self, gcp_path: str):
+    def __init__(self, gcp_path: str, credentials_base64: str):
         # Parse GCS path (e.g., "gs://bucket-name/folder/path")
         path = gcp_path.replace("gs://", "")
         self.bucket_name = path.split("/")[0]
         self.destination_folder = "/".join(path.split("/")[1:])
 
-        # Initialize client
-        self.client = storage.Client()
+        credentials_json = base64.b64decode(credentials_base64).decode("utf-8")
+        credentials_info = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+
+        self.client = storage.Client(credentials=credentials)
         self.bucket = self.client.bucket(self.bucket_name)
         print(f"Initialized GCP bucket: {self.bucket_name}, folder: {self.destination_folder}")
 

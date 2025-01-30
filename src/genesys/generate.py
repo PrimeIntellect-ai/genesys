@@ -45,7 +45,11 @@ def main(config: Config):
     # Initialize components
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
-    gcp_bucket = GcpBucket(config.gcp_bucket) if config.gcp_bucket is not None else None
+    gcp_bucket = (
+        GcpBucket(config.gcp_bucket, os.environ.get("GCP_CREDENTIALS_BASE64"))
+        if config.gcp_bucket is not None
+        else None
+    )
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
