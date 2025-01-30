@@ -99,6 +99,8 @@ def display_config_panel(console: Console, config):
     config_text.append(f"{config.max_tokens:,}\n", style="yellow")
     config_text.append("  Temperature     ", style="default")
     config_text.append(f"{config.temperature}\n", style="magenta")
+    config_text.append("  Top P     ", style="default")
+    config_text.append(f"{config.top_p}\n", style="navy_blue")
     config_text.append("  Batch Size      ", style="default")
     config_text.append(f"{config.data.batch_size}\n", style="cyan")
     config_text.append("  Dataset         ", style="default")

@@ -14,7 +14,8 @@ class Config(BaseConfig):
     name_model: str = "Qwen/QwQ-32B-Preview"
     num_gpus: int = 8
     max_tokens: int = 32_768
-    temperature: float = 0.9
+    temperature: float = 0.6
+    top_p: float = 0.95
 
     data: DataConfig = DataConfig()
 
@@ -54,7 +55,7 @@ def main(config: Config):
     console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
 
     # Rest of the generation logic
-    sampling_params = dict(temperature=config.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
+    sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=8192, stop=["<|eot_id|>"])
     all_results = []
     total_samples = 0
 
