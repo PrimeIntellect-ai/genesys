@@ -1,12 +1,13 @@
 import json
 import ast
+import asyncio
 from genesys.verifier.verifier import verify
 from pydantic_config import BaseConfig, parse_argv
 
 class Config(BaseConfig):
     file: str
 
-def main(config: Config):
+async def async_main(config: Config):
     to_verify = []
     with open(config.file, "r") as f:
         for line in f:
@@ -15,12 +16,8 @@ def main(config: Config):
             d["metadata"] = ast.literal_eval(d["metadata"])
             
             to_verify.append(d)
-            
-    responses = [d["llm_response"] for d in to_verify]
-    verification_infos = [d["verification_info"] for d in to_verify]
-    task_types = [d["task_type"] for d in to_verify]
-
-    scores = verify(responses, verification_infos, task_types)
+    
+    scores = await verify(to_verify)
     
     all_results = []
     for s, d in zip(scores, to_verify):
@@ -32,7 +29,10 @@ def main(config: Config):
         for result in all_results:
             json.dump(result, f)
             f.write('\n')
-    
+
+def main(config: Config):
+    asyncio.run(async_main(config))
+
 if __name__ == "__main__":
     config = Config(**parse_argv())
     main(config)

@@ -4,27 +4,14 @@ Math verification utils from https://github.com/EleutherAI/lm-evaluation-harness
 """
 
 import re
-import signal
 import sympy
-import json
 from sympy.parsing.latex import parse_latex
 from typing import Optional
-from pydantic import BaseModel, Field
-
-
-class MathGroundTruthVerification(BaseModel):
-    type: str = Field("math_groundtruth")
-    ground_truth: str
-
-
-
+import json
 
 def verify_math(model_output, ground_truth_answer):
     raw_answer = model_output
-    # for math, more complex. We will try a few different ways to extract the answer.
-    # this roughly follows 'flex em' in oe-eval-internal
     all_answers = []
-    # First, try find answer in \boxed{}.
     boxed_answer = last_boxed_only_string(raw_answer)
     if boxed_answer is not None:
         try:
@@ -33,21 +20,20 @@ def verify_math(model_output, ground_truth_answer):
             boxed_answer = None
     if boxed_answer is not None:
         all_answers.append(boxed_answer)
-    # Second, try to extract via minerva format.
+
     minerva_answer = normalize_final_answer(get_unnormalized_answer(raw_answer))
     if minerva_answer is not None and minerva_answer != "[invalidanswer]":
         all_answers.append(minerva_answer)
-    # If nothing still, try to find the last latex-formatted answer
+
     if len(all_answers) == 0:
         dollars = [m.start() for m in re.finditer("\\$", raw_answer)]
         if len(dollars) > 1:
-            # Add the answer between the second to last and last dollar sign
             answer = normalize_final_answer(raw_answer[dollars[-2] + 1 : dollars[-1]])
             all_answers.append(answer)
-    # otherwise, just take the full output. Probably wont work, bit of a yolo.
+
     if len(all_answers) == 0:
         all_answers.append(normalize_final_answer(model_output))
-    # now, compare all answers to ground truth.
+
     matched = False
     for answer in all_answers:
         if is_equiv(answer, ground_truth_answer):
@@ -56,9 +42,8 @@ def verify_math(model_output, ground_truth_answer):
         elif hendrycks_is_equiv(answer, ground_truth_answer):
             matched = True
             break
-    # if we got any match, we are good.
-    return matched
 
+    return int(matched) # we want to return a score from 0-1, not a boolean. 1 -> correct, 0 -> wrong
 
 def last_boxed_only_string(string: str) -> Optional[str]:
     idx = string.rfind("\\boxed")
@@ -212,56 +197,36 @@ def normalize_final_answer(final_answer: str) -> str:
 
     return final_answer
 
-
-class timeout:
-    def __init__(self, seconds=1, error_message="Timeout"):
-        self.seconds = seconds
-        self.error_message = error_message
-
-    def handle_timeout(self, signum, frame):
-        raise TimeoutError(self.error_message)
-
-    def __enter__(self):
-        signal.signal(signal.SIGALRM, self.handle_timeout)
-        signal.alarm(self.seconds)
-
-    def __exit__(self, type, value, traceback):
-        signal.alarm(0)
-
-
 def is_equiv(x1: str, x2: str) -> bool:
     """
     x1 and x2 are normalized latex string
     """
     try:
-        with timeout(seconds=5):
-            try:
-                parsed_x1 = parse_latex(x1)
-                parsed_x2 = parse_latex(x2)
-            except (
-                sympy.parsing.latex.errors.LaTeXParsingError,
-                sympy.SympifyError,
-                TypeError,
-            ):
-                print(f"couldn't parse one of {x1} or {x2}")
-                return False
+        try:
+            parsed_x1 = parse_latex(x1)
+            parsed_x2 = parse_latex(x2)
+        except (
+            sympy.parsing.latex.errors.LaTeXParsingError,
+            sympy.SympifyError,
+            TypeError,
+        ):
+            print(f"couldn't parse one of {x1} or {x2}")
+            return False
 
-            try:
-                diff = parsed_x1 - parsed_x2
-            except TypeError:
-                print(f"couldn't subtract {x1} and {x2}")
-                return False
+        try:
+            diff = parsed_x1 - parsed_x2
+        except TypeError:
+            print(f"couldn't subtract {x1} and {x2}")
+            return False
 
-            try:
-                if sympy.simplify(diff) == 0:
-                    return True
-                else:
-                    return False
-            except ValueError:
-                print(f"Had some trouble simplifying when comparing {x1} and {x2}")
-    except TimeoutError:
-        print(f"Timed out comparing {x1} and {x2}")
-        return False
+        try:
+            if sympy.simplify(diff) == 0:
+                return True
+            else:
+                return False
+        except ValueError:
+            print(f"Had some trouble simplifying when comparing {x1} and {x2}")
+            
     except ImportError as e:
         print(e)
         raise
@@ -444,6 +409,4 @@ if __name__ == "__main__":
     ground_truths = ["\\frac{1}{5}", "2285"]
 
     for r, gt in zip(responses, ground_truths):
-        print("input", r, "gt", gt)
         score = int(verify_math(r, gt))
-        print("score", score)
