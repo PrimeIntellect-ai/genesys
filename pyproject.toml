@@ -12,6 +12,7 @@ dependencies = [
     "antlr4-python3-runtime==4.11",
     "pydantic_config @ git+https://github.com/samsja/pydantic_config.git@74c94ee",
     "google-cloud-storage",
+    "tomli",
 ]
 
 [project.optional-dependencies]
