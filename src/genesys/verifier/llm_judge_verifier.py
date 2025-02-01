@@ -1,7 +1,6 @@
-from openai import OpenAI
 import os
-import re
-import json
+from openai import OpenAI
+from genesys.utils import extract_json
 
 JUDGE_PROMPT = """
 Your job is to judge the output of a large language model trained to reason about hard problems such as mathematics, science, and coding. Below you will see a problem given to the model, a gold standard response provided by a human, and the model's provided response. 
@@ -39,24 +38,6 @@ def build_additional_judging_instructions(judging_instructions):
         return ""
 
     return f"\nHere are additional judging instructions:\n{judging_instructions}\n\n"
-
-
-def extract_json(text):
-    json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-    if json_match:
-        json_str = json_match.group(1)
-    else:
-        # If no triple backticks, try to find content between curly braces
-        json_match = re.search(r"\{[\s\S]*\}", text)
-        if json_match:
-            json_str = json_match.group(0)
-        else:
-            raise ValueError("No JSON-like content found in the markdown")
-
-    try:
-        return json.loads(json_str)
-    except json.JSONDecodeError:
-        raise ValueError("Failed to parse JSON from the extracted content")
 
 
 def verify_with_llm_judge_and_groundtruth(

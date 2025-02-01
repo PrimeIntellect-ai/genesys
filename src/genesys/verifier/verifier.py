@@ -4,6 +4,7 @@ from tqdm.asyncio import tqdm
 from genesys.verifier.code_test_verifier import verify_code, init_containers, close_containers
 from genesys.verifier.math_verifier import verify_math
 from genesys.verifier.llm_judge_verifier import verify_with_llm_judge_and_groundtruth
+from genesys.verifier.code_output_prediction_verifier import verify_code_understanding
 
 
 async def async_verify_code(response: str, test_cases, language):
@@ -36,12 +37,18 @@ async def async_verify_math(model_output, ground_truth_answer, timeout_seconds=5
         return False
 
 
+async def async_verify_code_understanding(model_output, ground_truth_answer):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, verify_code_understanding, model_output, ground_truth_answer)
+
+
 async def verify(
     results,
     max_parallel: Dict[str, int] = {
         "verifiable_code": 5,
         "verifiable_math": 10,
         "llm_judgeable_groundtruth_similarity": 30,
+        "verifiable_code_understanding": 30,
     },
     math_timeout: int = 5,
 ) -> List[float]:
@@ -57,6 +64,7 @@ async def verify(
         "llm_judgeable_groundtruth_similarity": asyncio.Semaphore(
             max_parallel.get("llm_judgeable_groundtruth_similarity", 30)
         ),
+        "verifiable_code_understanding": asyncio.Semaphore(max_parallel.get("verifiable_code_understanding", 30)),
     }
 
     scores = [None] * len(results)
@@ -81,6 +89,10 @@ async def verify(
                     result["gold_standard_solution"],
                     result["verification_info"]["judging_instructions"],
                 )
+            elif task_type == "verifiable_code_understanding":
+                score = await async_verify_code_understanding(
+                    result["llm_response"], result["verification_info"]["ground_truth"], timeout_seconds=math_timeout
+                )
 
             else:
                 raise ValueError(f"Unknown verification type: {task_type}")
@@ -97,45 +109,3 @@ async def verify(
             close_containers()
 
     return scores
-
-
-if __name__ == "__main__":
-    sample_results = [
-        {
-            "task_type": "verifiable_math",
-            "llm_response": "The answer is \\boxed{42}.",
-            "verification_info": {"ground_truth": "42"},
-        },
-        {
-            "task_type": "verifiable_math",
-            "llm_response": "The answer is \\boxed{32}.",
-            "verification_info": {"ground_truth": "42"},
-        },
-        {
-            "task_type": "llm_judgeable_groundtruth_similarity",
-            "prompt": "What is the function in python with which i can write to stdout",
-            "llm_response": "The function is write()",
-            "gold_standard_solution": "The function is print()",
-            "verification_info": {"judging_instructions": ""},
-        },
-        {
-            "task_type": "llm_judgeable_groundtruth_similarity",
-            "prompt": "What is the function in python with which i can write to stdout",
-            "llm_response": "The function is print()",
-            "gold_standard_solution": "The function is print()",
-            "verification_info": {"judging_instructions": ""},
-        },
-        {
-            "task_type": "llm_judgeable_groundtruth_similarity",
-            "prompt": "What is the function in python with which i can write to stdout",
-            "llm_response": "The function is print() or write(), not sure",
-            "gold_standard_solution": "The function is print()",
-            "verification_info": {"judging_instructions": ""},
-        },
-    ]
-
-    verified_scores = asyncio.run(
-        verify(results=sample_results, max_parallel={"verifiable_code": 3, "verifiable_math": 5}, math_timeout=5)
-    )
-
-    print("Verification Scores:", verified_scores)
