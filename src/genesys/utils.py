@@ -3,7 +3,9 @@ import os
 import re
 import string
 import random
+import base64
 from google.cloud import storage
+from google.oauth2 import service_account
 from queue import Queue
 import threading
 
@@ -13,15 +15,22 @@ from rich import box
 from rich.console import Console
 
 
+import socket
+import platform
+
+
 class GcpBucket:
-    def __init__(self, gcp_path: str):
+    def __init__(self, gcp_path: str, credentials_base64: str):
         # Parse GCS path (e.g., "gs://bucket-name/folder/path")
         path = gcp_path.replace("gs://", "")
         self.bucket_name = path.split("/")[0]
         self.destination_folder = "/".join(path.split("/")[1:])
 
-        # Initialize client
-        self.client = storage.Client()
+        credentials_json = base64.b64decode(credentials_base64).decode("utf-8")
+        credentials_info = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+
+        self.client = storage.Client(credentials=credentials)
         self.bucket = self.client.bucket(self.bucket_name)
         print(f"Initialized GCP bucket: {self.bucket_name}, folder: {self.destination_folder}")
 
@@ -100,6 +109,8 @@ def display_config_panel(console: Console, config):
     config_text.append(f"{config.max_tokens:,}\n", style="yellow")
     config_text.append("  Temperature     ", style="default")
     config_text.append(f"{config.temperature}\n", style="magenta")
+    config_text.append("  Top P     ", style="default")
+    config_text.append(f"{config.top_p}\n", style="navy_blue")
     config_text.append("  Batch Size      ", style="default")
     config_text.append(f"{config.data.batch_size}\n", style="cyan")
     config_text.append("  Dataset         ", style="default")
@@ -126,3 +137,39 @@ def extract_json(text):
         return json.loads(json_str)
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
+
+        
+def get_default_socket_path() -> str:
+    """Returns the default socket path based on the operating system."""
+    default = (
+        "/tmp/com.prime.miner/metrics.sock"
+        if platform.system() == "Darwin"
+        else "/var/run/com.prime.miner/metrics.sock"
+    )
+    return os.getenv("PRIME_TASK_BRIDGE_SOCKET", default=default)
+
+
+def send_message_prime(metric: dict, socket_path: str = None) -> bool:
+    """Sends a message to the specified socket path or uses the default if none is provided."""
+    socket_path = socket_path or os.getenv("PRIME_TASK_BRIDGE_SOCKET", get_default_socket_path())
+    # print("Sending message to socket: ", socket_path)
+
+    task_id = os.getenv("PRIME_TASK_ID", None)
+    if task_id is None:
+        print("No task ID found, skipping logging to Prime")
+        return False
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.connect(socket_path)
+
+            for key, value in metric.items():
+                message = {"label": key, "value": value, "task_id": task_id}
+                sock.sendall(json.dumps(message).encode())
+        return True
+    except Exception:
+        return False
+
+
+def log_prime(metric: dict):
+    if not (send_message_prime(metric)):
+        print(f"Prime logging failed: {metric}")

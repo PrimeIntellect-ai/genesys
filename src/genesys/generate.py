@@ -14,7 +14,8 @@ class Config(BaseConfig):
     name_model: str = "Qwen/QwQ-32B-Preview"
     num_gpus: int = 8
     max_tokens: int = 32_768
-    temperature: float = 0.9
+    temperature: float = 0.6
+    top_p: float = 0.95
 
     data: DataConfig = DataConfig()
 
@@ -45,7 +46,11 @@ def main(config: Config):
     # Initialize components
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
-    gcp_bucket = GcpBucket(config.gcp_bucket) if config.gcp_bucket is not None else None
+    gcp_bucket = (
+        GcpBucket(config.gcp_bucket, os.environ.get("GCP_CREDENTIALS_BASE64"))
+        if config.gcp_bucket is not None
+        else None
+    )
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
@@ -54,7 +59,7 @@ def main(config: Config):
     console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
 
     # Rest of the generation logic
-    sampling_params = dict(temperature=config.temperature, max_new_tokens=8192, stop=["<|eot_id|>"])
+    sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=8192, stop=["<|eot_id|>"])
     all_results = []
     total_samples = 0
 

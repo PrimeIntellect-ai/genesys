@@ -28,6 +28,7 @@ jobs:
           images: |
             primeintellect/genesys
           tags: |
+            type=raw,value=latest
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -53,6 +54,9 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Test import
+        run: docker run primeintellect/genesys:latest uv run python -c "import genesys"
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
