@@ -5,6 +5,8 @@ import rich.progress
 from transformers import AutoTokenizer
 import random
 
+from genesys.utils import log_prime
+
 SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 
 
@@ -16,6 +18,8 @@ class DataConfig(BaseConfig):
     num_responses_per_question: int = 1
 
     shuffle: bool = True
+
+    prime_log: bool = False
 
 
 def repeat_elements(lst, n):
@@ -67,7 +71,6 @@ class DataLoaderGenesys:
 
         self.tokenizer = tokenizer
 
-        self.dataset_counters = [0] * len(self.datasets)
         self.dataset_lengths = [len(dataset) for dataset in self.datasets]
 
         self.progress_bars = rich.progress.Progress(
@@ -124,5 +127,13 @@ class DataLoaderGenesys:
                 datasets_sample_counter[current_dataset_index] = end
                 idx += 1
 
+                self.log_progress_prime(self.paths, datasets_sample_counter)
+
                 if sum(datasets_sample_counter) >= self.total_samples:
                     break
+
+    def log_progress_prime(self, paths: list[str], dataset_counters: list[int]):
+        if self.config.prime_log:
+            metric = {path: counter for path, counter in zip(paths, dataset_counters)}
+            metric.update({"total": sum(dataset_counters)})
+            log_prime(metric)

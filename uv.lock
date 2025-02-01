@@ -630,6 +630,7 @@ dependencies = [
     { name = "google-cloud-storage" },
     { name = "pydantic-config" },
     { name = "rich" },
+    { name = "tomli" },
     { name = "torch" },
     { name = "transformers" },
 ]
@@ -669,6 +670,7 @@ requires-dist = [
     { name = "setuptools", marker = "extra == 'sglang'" },
     { name = "sglang", extras = ["srt"], marker = "extra == 'sglang'", specifier = ">=0.4.1" },
     { name = "sympy", marker = "extra == 'sglang'" },
+    { name = "tomli" },
     { name = "torch", specifier = ">=2.4.1" },
     { name = "transformers", specifier = ">=4.44.2" },
     { name = "uvicorn", marker = "extra == 'sglang'" },

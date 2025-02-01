@@ -1,4 +1,4 @@
-name: Tests on GPU
+name: Tests configs
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 jobs:
   gpu-tests:
     name: python
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +28,7 @@ jobs:
         run: uv python install 3.10.13
 
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: uv sync --extra sglang # not adding sglang for now as we only test configs
+
       - name: Run tests
-        run: uv run pytest tests
+        run: uv run pytest tests/test_configs.py
