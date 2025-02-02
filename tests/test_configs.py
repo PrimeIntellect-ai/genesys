@@ -4,7 +4,7 @@ Need to be run from the root folder
 """
 
 import os
-from genesys.generate import Config
+from genesys.schemas import GenerateConfig
 import pytest
 import tomli
 
@@ -25,5 +25,5 @@ config_file_paths = get_all_toml_files("configs")
 def test_load_config(config_file_path):
     with open(f"{config_file_path}", "rb") as f:
         content = tomli.load(f)
-    config = Config(**content)
+    config = GenerateConfig(**content)
     assert config is not None
