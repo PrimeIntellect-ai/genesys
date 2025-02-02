@@ -5,8 +5,8 @@ from genesys.data import DataLoaderGenesys, DataConfig
 import sglang as sgl
 from transformers import AutoTokenizer
 from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id
+import pandas as pd
 import uuid
-
 from rich.console import Console
 
 
@@ -19,31 +19,26 @@ class Config(BaseConfig):
 
     data: DataConfig = DataConfig()
 
-    # output file
     out_file_prefix: str = "out"
-    gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
+    gcp_bucket: str | None = None # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
     path_output: str = "output"
 
     @model_validator(mode="after")
     def check_batch_size(self):
         if self.sample_per_file < self.data.batch_size:
-            raise ValueError("sample_per_file must be greater than or equal to batch_size")
+            raise ValueError("sample_per_file must be >= batch_size")
         if self.data.max_samples is not None and self.data.max_samples < self.sample_per_file:
-            raise ValueError("max_samples must be greater than or equal to sample_per_file")
+            raise ValueError("max_samples must be >= sample_per_file")
         return self
 
 
 def main(config: Config):
     console = Console()
 
-    # Initial welcome table
     display_config_panel(console, config)
-
-    # Loading message
     console.print("\n[bold yellow] Loading model and initializing pipeline...[/]\n")
 
-    # Initialize components
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
     gcp_bucket = (
@@ -55,10 +50,8 @@ def main(config: Config):
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
 
-    # Ready message
     console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
 
-    # Rest of the generation logic
     sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=8192, stop=["<|eot_id|>"])
     all_results = []
     total_samples = 0
@@ -74,7 +67,7 @@ def main(config: Config):
         total_samples += len(batch)
 
         if len(all_results) >= config.sample_per_file:
-            file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.jsonl"
+            file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.parquet"
             file = os.path.join(config.path_output, file_name)
             save_batch_results(all_results, file, gcp_bucket)
             all_results = []

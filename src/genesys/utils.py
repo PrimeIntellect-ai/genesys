@@ -1,5 +1,6 @@
 import json
 import os
+import panda as pd
 import string
 import random
 import base64
@@ -71,14 +72,12 @@ class GcpBucket:
             self.worker_thread.join()
 
 
-def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None = None):
-    # Save locally first
-    with open(results_file, "a") as f:
-        for result in batch_results:
-            json.dump(result, f)
-            f.write("\n")
 
-    # Upload to GCP if bucket is configured
+def save_batch_results(batch_results, results_file, gcp_bucket=None):
+    """Save results to a Parquet file and optionally upload to GCP."""
+    df = pd.DataFrame(batch_results)
+    df.to_parquet(results_file, engine='pyarrow', compression='zstd')
+    
     if gcp_bucket is not None:
         try:
             gcp_bucket.push(results_file)
