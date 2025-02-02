@@ -18,6 +18,8 @@ class DataConfig(BaseConfig):
 
     prime_log: bool = False
 
+    prime_log_freq: int = 5
+
 
 def repeat_elements(lst, n):
     return [item for item in lst for _ in range(n)]
@@ -86,7 +88,7 @@ class DataLoaderGenesys:
             for i, length in enumerate(self.dataset_lengths)
         ]
 
-        self.prime_metric = PrimeMetric(disable=not (config.prime_log))
+        self.prime_metric = PrimeMetric(disable=not (config.prime_log), period=config.prime_log_freq)
 
     def _prepare_batch(self, batch: dict, dataset: str) -> tuple:
         batch = repeat_elements(

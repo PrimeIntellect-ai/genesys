@@ -14,6 +14,7 @@ dependencies = [
     "google-cloud-storage",
     "tomli",
     "docker>=7.1.0",
+    "pynvml>=12.0.0"
 ]
 
 [project.optional-dependencies]
