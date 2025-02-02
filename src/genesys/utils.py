@@ -4,19 +4,16 @@ import re
 import string
 import random
 import base64
+import threading
+import socket
+import platform
 from google.cloud import storage
 from google.oauth2 import service_account
 from queue import Queue
-import threading
-
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
 from rich.console import Console
-
-
-import socket
-import platform
 
 
 class GcpBucket:
@@ -138,7 +135,7 @@ def extract_json(text):
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
 
-        
+
 def get_default_socket_path() -> str:
     """Returns the default socket path based on the operating system."""
     default = (

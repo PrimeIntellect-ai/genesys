@@ -13,6 +13,7 @@ dependencies = [
     "pydantic_config @ git+https://github.com/samsja/pydantic_config.git@74c94ee",
     "google-cloud-storage",
     "tomli",
+    "docker>=7.1.0",
 ]
 
 [project.optional-dependencies]

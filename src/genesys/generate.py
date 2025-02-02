@@ -1,17 +1,16 @@
 import os
-from pydantic import model_validator
-from pydantic_config import BaseConfig, parse_argv
-from genesys.data import DataLoaderGenesys, DataConfig
-import sglang as sgl
-from transformers import AutoTokenizer
-from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id
 import uuid
-
+import sglang as sgl
+from pydantic_config import parse_argv, BaseConfig
+from pydantic import model_validator
+from transformers import AutoTokenizer
 from rich.console import Console
+from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id
+from genesys.data import DataConfig, DataLoaderGenesys
 
 
-class Config(BaseConfig):
-    name_model: str = "Qwen/QwQ-32B-Preview"
+class GenerateConfig(BaseConfig):
+    name_model: str = "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
     num_gpus: int = 8
     max_tokens: int = 32_768
     temperature: float = 0.6
@@ -34,7 +33,7 @@ class Config(BaseConfig):
         return self
 
 
-def main(config: Config):
+def main(config: GenerateConfig):
     console = Console()
 
     # Initial welcome table
@@ -59,7 +58,7 @@ def main(config: Config):
     console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
 
     # Rest of the generation logic
-    sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=8192, stop=["<|eot_id|>"])
+    sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=config.max_tokens)
     all_results = []
     total_samples = 0
 
@@ -69,7 +68,7 @@ def main(config: Config):
             batch_element["llm_response"] = response["text"]
             batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
             batch_element["model_name"] = config.name_model
-            batch_element["generation_config"] = dict(temperature=config.temperature)
+            batch_element["generation_config"] = sampling_params
             all_results.append(batch_element)
         total_samples += len(batch)
 
@@ -83,5 +82,5 @@ def main(config: Config):
 
 
 if __name__ == "__main__":
-    config = Config(**parse_argv())
+    config = GenerateConfig(**parse_argv())
     main(config)

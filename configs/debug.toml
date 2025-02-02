@@ -2,8 +2,9 @@ name_model = "Qwen/Qwen2.5-Coder-0.5B"
 num_gpus = 1
 sample_per_file = 8
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
+max_tokens = 16384
 
 [data]
-max_samples = 8
+max_samples = 16
 batch_size = 8
 path = "justus27/test-vcu"
