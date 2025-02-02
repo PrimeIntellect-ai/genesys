@@ -3,11 +3,13 @@ import ast
 import asyncio
 from typing import List, Dict, Any, Callable
 from tqdm.asyncio import tqdm
-from pydantic_config import parse_argv
-from genesys.schemas import VerifyConfig, UnscoredResult
+from pydantic_config import BaseConfig, parse_argv
+from genesys.schemas import UnscoredResult
 from genesys.verifiers.registry import VERIFIER_REGISTRY
 
-globalcount = 0
+
+class VerifyConfig(BaseConfig):
+    file: str
 
 
 async def run_sync_with_timeout(sync_func: Callable, result: UnscoredResult, timeout=None):
@@ -42,9 +44,6 @@ async def verify(results: List[UnscoredResult]) -> List[Any]:
         verifier_obj = verifier_instances[ttype]
         async with semaphores[ttype]:
             try:
-                global globalcount
-                globalcount += 1
-                print("pre", globalcount)
                 verification_result = await run_sync_with_timeout(verifier_obj.verify, result, timeout=200)
                 verification_results[index] = verification_result
             except asyncio.TimeoutError:
