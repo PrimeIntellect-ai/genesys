@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import string
 import random
 import base64
@@ -120,6 +121,24 @@ def display_config_panel(console: Console, config):
     console.print(Panel(config_text, title="Configuration", box=box.ROUNDED, width=70))
 
 
+def extract_json(text):
+    json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
+    if json_match:
+        json_str = json_match.group(1)
+    else:
+        # If no triple backticks, try to find content between curly braces
+        json_match = re.search(r"\{[\s\S]*\}", text)
+        if json_match:
+            json_str = json_match.group(0)
+        else:
+            raise ValueError("No JSON-like content found in the markdown")
+
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        raise ValueError("Failed to parse JSON from the extracted content")
+
+        
 def get_default_socket_path() -> str:
     """Returns the default socket path based on the operating system."""
     default = (

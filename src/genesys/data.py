@@ -59,8 +59,7 @@ class DataLoaderGenesys:
         self.normalized_ratios = [r / sum(ratio) for r in ratio]
 
         def _add_column(dataset, path):
-            dataset = dataset.add_column("problem_id", range(len(dataset)))
-            dataset = dataset.add_column("dataset_name", [path] * len(dataset))
+            dataset = dataset.add_column("hf_dataset_name", [path] * len(dataset))
             return dataset
 
         self.datasets = [_add_column(dataset, path) for dataset, path in zip(datasets, self.paths)]
