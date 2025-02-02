@@ -135,5 +135,4 @@ class DataLoaderGenesys:
     def log_progress_prime(self, paths: list[str], dataset_counters: list[int]):
         if self.config.prime_log:
             metric = {path: counter for path, counter in zip(paths, dataset_counters)}
-            metric.update({"total": sum(dataset_counters)})
             log_prime(metric)
