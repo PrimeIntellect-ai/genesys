@@ -4,6 +4,6 @@ sample_per_file = 8
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
 
 [data]
-max_samples = 8
+max_samples = 16
 batch_size = 8
 path = "justus27/test-vcu"

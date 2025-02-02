@@ -4,10 +4,7 @@ from datasets import load_dataset
 import rich.progress
 from transformers import AutoTokenizer
 import random
-
 from genesys.utils import log_prime
-
-SYSTEM_PROMPT = "Solve the following math problem efficiently and clearly. Think carefully and step by step about your response and reason before providing a final response. Conclude your response with: \n\nTherefore, the final answer is: $\\boxed{answer}$. I hope it is correct.\n\nWhere [answer] is just the final number or expression that solves the problem. If the question is a multiple choice question, [answer] should be the letter indicating your correct response (e.g. \\text{A} or \\text{B})."
 
 
 class DataConfig(BaseConfig):
