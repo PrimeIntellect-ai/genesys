@@ -4,7 +4,7 @@ Need to be run from the root folder
 """
 
 import os
-from genesys.schemas import GenerateConfig
+from genesys.generate import GenerateConfig
 import pytest
 import tomli
 
