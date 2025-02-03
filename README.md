@@ -1,7 +1,7 @@
 <p align="center">
 </p>
 
-<img src="https://github.com/user-attachments/assets/3aab8c39-30a9-4f67-8106-4541b613f2af" alt="Prime Intellect" style="width: 100%; height: auto;"/>
+<img src="https://github.com/user-attachments/assets/51e44795-5206-49d6-a12a-ecacd2799df2" alt="Prime Intellect" style="width: 100%; height: auto;"/>
 
 <h3 align="center">
 Genesys: Synthetic Reasoning Data & Verification
