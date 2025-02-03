@@ -2,8 +2,7 @@
   Test
 </p>
 
-
-![Prime Intellect](https://github.com/user-attachments/assets/9deed6d6-d9d7-40a0-b163-12ab8579f450)
+<img src="https://github.com/user-attachments/assets/9deed6d6-d9d7-40a0-b163-12ab8579f450" alt="Prime Intellect" style="width: 100%; height: auto;">
 
 <p align="center">
 Test
