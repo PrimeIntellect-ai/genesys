@@ -19,44 +19,56 @@ The library has two main entrypoints:
 - `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
 - `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers. Verifiers are task-dependent - some task responses are verified by executing code tests, others are verified with an LLM judge. Genesys is designed to make it easy to add custom verifiers for new tasks.
 
-## Installation
+# Usage
+
+### Installation
 
 **Quick Install:** Run the following command for a quick install:
 ```
 curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
 ```
 
-The script will execute the following commands:
-```
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
-git clone git@github.com:PrimeIntellect-ai/genesys.git
-cd genesys
-uv sync --extra sglang
-```
+### Data Generation
 
-## run
-
-This is a short run to test if the repo is installed correctly
+To check that your installation has succeeded, you can run the following command to generate data with a small model:
 
 ```
+# with config file; see /configs for all configurations
 uv run python src/genesys/generate.py @ configs/debug.toml
+
+# otherwise, with --flags
+uv run python src/genesys/generate.py \
+  --name_model "Qwen/Qwen2.5-Coder-0.5B" \
+  --num_gpus 1 \
+  --sample_per_file 8 \
+  --temperature 0.6 \
+  --max_tokens 16384 \
+  --data.max_samples 16 \
+  --data.batch_size 8 \
+  --data.path "PrimeIntellect/verifiable-math" # Follow the schema from "PrimeIntellect/verifiable-math", "PrimeIntellect/verifiable-coding", etc.
 ```
 
-For pushing the data to s3/gcp bucket, you have to download a service account key file with the permission to push to your bucket, encode it to base64 and set the encoded file as `GCP_CREDENTIALS_BASE64`. Then you can specify your bucket via the `--gcp_bucket` flag:
+Your file with responses will be saved to `/output`.
+
+**Run with Docker:** You can also generate data using the docker image:
 
 ```
-export GCP_CREDENTIALS_BASE64=$(base64 -w 0 /path/to/your/service-account-key.json)
-uv run python src/genesys/generate.py @ configs/debug.toml --gcp_bucket checkpoints_pi/test_data
+sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/genesys/generate.py @ configs/debug.toml
 ```
 
-for dev setup:
+### Verification
+
+To verify model responses, you can use the `src/genesys/verify.py` script along with the output file from `src/genesys/generate.py` located in `output`.
 
 ```
-uv run pre-commit install
+uv run python src/genesys/verify.py --file <path-to-out-file> # output file is usually at /output/out_<some_uuid>.jsonl
 ```
 
+The verification loop runs asynchronously to parallelize verification and speed up processing. .
 
+### Adding Tasks & Verifiers
+
+You might want to run your own
 ### running test
 
 ```
