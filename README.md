@@ -7,12 +7,14 @@
 GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-| <a href="https://docs.vllm.ai"><b>Blog</b></a> | <a href="https://vllm.ai"><b>SYNTHETIC-1</b></a> | <a href="https://arxiv.org/abs/2309.06180"><b>Paper</b></a> | <a href="https://slack.vllm.ai"><b>Prime Intellect</b></a> |
+| <a href=""><b>Blog</b></a> | <a href=""><b>Twitter / X </b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
 </p>
 
 ---
 
-## install
+## Overview
+
+Genesys is a library for synthetic reasoning data generation and verification. It is 
 
 quick install (only will work when repo got open source)
 ```
