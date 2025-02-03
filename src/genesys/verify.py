@@ -4,7 +4,7 @@ import asyncio
 from typing import List, Dict, Any, Callable
 from tqdm.asyncio import tqdm
 from pydantic_config import BaseConfig, parse_argv
-from genesys.schemas import UnscoredResult
+from genesys.schemas import Response
 from genesys.verifiers.registry import VERIFIER_REGISTRY
 
 
@@ -12,7 +12,7 @@ class VerifyConfig(BaseConfig):
     file: str
 
 
-async def run_sync_with_timeout(sync_func: Callable, result: UnscoredResult, timeout=None):
+async def run_sync_with_timeout(sync_func: Callable, result: Response, timeout=None):
     """
     Runs a synchronous function in an executor with optional timeout.
     """
@@ -23,7 +23,7 @@ async def run_sync_with_timeout(sync_func: Callable, result: UnscoredResult, tim
     return await coro
 
 
-async def verify(results: List[UnscoredResult]) -> List[Any]:
+async def verify(results: List[Response]) -> List[Any]:
     """
     Given a list of result dictionaries, dispatch each to the appropriate verifier
     (as determined by the "task_type" field) and run them concurrently using semaphores
@@ -49,10 +49,16 @@ async def verify(results: List[UnscoredResult]) -> List[Any]:
             except asyncio.TimeoutError:
                 print(f"Timeout verifying '{ttype}' at index {index}")
                 verification_results[index] = {"score": None, "verification_result_info": {"failure_reason": "timeout"}}
+            except Exception as e:
+                print(f"Error verifying '{ttype}' at index {index}")
+                verification_results[index] = {"score": None, "verification_result_info": {"failure_reason": e}}
 
     tasks = [asyncio.create_task(process_result(i, r)) for i, r in enumerate(results)]
     for task in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="Verifying"):
         await task
+
+    for ttype in task_types_in_use:
+        verifier_instances[ttype].terminate()
 
     return verification_results
 

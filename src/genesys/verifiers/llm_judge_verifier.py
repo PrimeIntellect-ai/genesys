@@ -31,7 +31,7 @@ Think about your score and then return a json with a first field 'explanation' e
 
 class LlmJudgeVerifier(BaseVerifier):
     max_parallel = 30  # For concurrency control if needed.
-    timeout = 100
+    timeout = 120
 
     def verify(self, result: Dict) -> Tuple[float, str]:
         """

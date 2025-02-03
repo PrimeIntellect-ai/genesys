@@ -34,7 +34,7 @@ class CodeVerifier(BaseVerifier):
         self.docker_client = docker.from_env()
         self.containers = {}
         self._init_containers()
-        self.timeout = 30
+        self.timeout = 120
         self.max_parallel = 5
 
     def __del__(self):
