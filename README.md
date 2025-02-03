@@ -19,13 +19,14 @@ The library has two main entrypoints:
 - `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
 - `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers. Verifiers are task-dependent - some task responses are verified by executing code tests, others are verified with an LLM judge. Genesys is designed to make it easy to add custom verifiers for new tasks.
 
-## Usage
+## Installation
 
-quick install (only will work when repo got open source)
+**Quick Install:** Run the following command for a quick install:
 ```
 curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
 ```
 
+The script will execute the following commands:
 ```
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
