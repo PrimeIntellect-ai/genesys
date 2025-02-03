@@ -13,7 +13,10 @@ GENESYS: Reasoning Data Generation & Verification
   | <a href=""><b>Jack Min Ong</b></a> 
   | <a href=""><b>Michael Kleibinger</b></a> |
   <br />
-  <!-- Add more text or links on a new line here -->
+  | <a href=""><b>Manveer Basra</b></a> 
+  | <a href=""><b>Jannik Straube</b></a> |
+  <br />
+
   | <a href=""><b>Fares Obeid</b></a> 
   | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
