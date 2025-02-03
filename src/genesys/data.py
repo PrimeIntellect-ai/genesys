@@ -44,8 +44,7 @@ class DataLoaderGenesys:
         datasets = [load_dataset(path)["train"] for path in self.paths]
 
         if config.shuffle:
-            for dataset in datasets:
-                dataset = dataset.shuffle()
+            datasets = [data.shuffle() for data in datasets]
 
         if config.ratio is not None:
             ratio = [float(r) for r in config.ratio.split(",")]
