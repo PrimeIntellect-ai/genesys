@@ -4,7 +4,7 @@ from datasets import load_dataset
 import rich.progress
 from transformers import AutoTokenizer
 import random
-from genesys.utils import log_prime
+from genesys.prime_metrics import PrimeMetric
 
 
 class DataConfig(BaseConfig):
@@ -17,6 +17,8 @@ class DataConfig(BaseConfig):
     shuffle: bool = True
 
     prime_log: bool = False
+
+    prime_log_freq: int = 5
 
 
 def repeat_elements(lst, n):
@@ -85,6 +87,8 @@ class DataLoaderGenesys:
             for i, length in enumerate(self.dataset_lengths)
         ]
 
+        self.prime_metric = PrimeMetric(disable=not (config.prime_log), period=config.prime_log_freq)
+
     def _prepare_batch(self, batch: dict, dataset: str) -> tuple:
         batch = repeat_elements(
             [b for b in batch], self.config.num_responses_per_question
@@ -129,7 +133,6 @@ class DataLoaderGenesys:
                     break
 
     def log_progress_prime(self, paths: list[str], dataset_counters: list[int]):
-        if self.config.prime_log:
-            metric = {path: counter for path, counter in zip(paths, dataset_counters)}
-            metric.update({"total": sum(dataset_counters)})
-            log_prime(metric)
+        metric = {path: counter for path, counter in zip(paths, dataset_counters)}
+        metric.update({"total": sum(dataset_counters)})
+        self.prime_metric.log_prime(metric)

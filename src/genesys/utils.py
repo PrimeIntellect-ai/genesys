@@ -5,8 +5,7 @@ import string
 import random
 import base64
 import threading
-import socket
-import platform
+
 from google.cloud import storage
 from google.oauth2 import service_account
 from queue import Queue
@@ -134,39 +133,3 @@ def extract_json(text):
         return json.loads(json_str)
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
-
-
-def get_default_socket_path() -> str:
-    """Returns the default socket path based on the operating system."""
-    default = (
-        "/tmp/com.prime.miner/metrics.sock"
-        if platform.system() == "Darwin"
-        else "/var/run/com.prime.miner/metrics.sock"
-    )
-    return os.getenv("PRIME_TASK_BRIDGE_SOCKET", default=default)
-
-
-def send_message_prime(metric: dict, socket_path: str = None) -> bool:
-    """Sends a message to the specified socket path or uses the default if none is provided."""
-    socket_path = socket_path or os.getenv("PRIME_TASK_BRIDGE_SOCKET", get_default_socket_path())
-    # print("Sending message to socket: ", socket_path)
-
-    task_id = os.getenv("PRIME_TASK_ID", None)
-    if task_id is None:
-        print("No task ID found, skipping logging to Prime")
-        return False
-    try:
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-            sock.connect(socket_path)
-
-            for key, value in metric.items():
-                message = {"label": key, "value": value, "task_id": task_id}
-                sock.sendall(json.dumps(message).encode())
-        return True
-    except Exception:
-        return False
-
-
-def log_prime(metric: dict):
-    if not (send_message_prime(metric)):
-        print(f"Prime logging failed: {metric}")
