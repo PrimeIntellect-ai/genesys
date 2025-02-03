@@ -31,6 +31,11 @@ export GCP_CREDENTIALS_BASE64=$(base64 -w 0 /path/to/your/service-account-key.js
 uv run python src/genesys/generate.py @ configs/debug.toml --gcp_bucket checkpoints_pi/test_data
 ```
 
+automatically detect the right model to run
+```sh
+./script/entrypoint.sh
+```
+
 for dev setup:
 
 ```
@@ -59,5 +64,3 @@ run
 ```
 sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/genesys/generate.py @ configs/debug.toml
 ```
-
-
