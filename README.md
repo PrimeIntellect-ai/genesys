@@ -16,7 +16,6 @@ GENESYS: Reasoning Data Generation & Verification
   | <a href=""><b>Manveer Basra</b></a> 
   | <a href=""><b>Jannik Straube</b></a> |
   <br />
-
   | <a href=""><b>Fares Obeid</b></a> 
   | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
