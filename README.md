@@ -19,6 +19,7 @@ GENESYS: Reasoning Data Generation & Verification
   | <a href=""><b>Fares Obeid</b></a> 
   | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
+<br><br> <!-- Extra spacing here -->
 
 
 <h3 align="center">
