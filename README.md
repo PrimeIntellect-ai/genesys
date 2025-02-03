@@ -1,6 +1,17 @@
-# Genesys
+<p align="center">
+<h2 align="center">INTELLECT-MATH: Frontier Mathematical Reasoning through Better Initializations for Reinforcement Learning</h1>
+</p>
 
 <img width="363" alt="Screenshot 2025-02-03 at 03 15 04" src="https://github.com/user-attachments/assets/9deed6d6-d9d7-40a0-b163-12ab8579f450" />
+
+
+<p align="center">
+Test
+</p>
+<p>
+  
+</p>
+
 
 
 ## install
