@@ -1,7 +1,7 @@
 <p align="center">
 </p>
 
-<img src="https://github.com/user-attachments/assets/f4d77580-b5ba-41f0-a1bf-a00882191ef4" alt="Prime Intellect" style="width: 100%; height: auto;"/>
+<img src="https://github.com/user-attachments/assets/5ad430b4-33da-4b83-a277-15eeed1f8249" alt="Prime Intellect" style="width: 100%; height: auto;"/>
 
 <p align="center">
 Test
