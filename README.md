@@ -163,4 +163,4 @@ VERIFIER_REGISTRY = {
 }
 ```
 
-Every task from your dataset with `"task_type": "length_adherance" will now be verified with the implemented length verifier when running `src/genesys/verify.py`.
+Every task from your dataset with `"task_type": "length_adherance"` will now be verified with the implemented length verifier when running `src/genesys/verify.py`.
