@@ -44,7 +44,9 @@ async def verify(results: List[Response]) -> List[Any]:
         verifier_obj = verifier_instances[ttype]
         async with semaphores[ttype]:
             try:
-                verification_result = await run_sync_with_timeout(verifier_obj.verify, result, timeout=200)
+                verification_result = await run_sync_with_timeout(
+                    verifier_obj.verify, result, timeout=verifier_obj.timeout
+                )
                 verification_results[index] = verification_result
             except asyncio.TimeoutError:
                 print(f"Timeout verifying '{ttype}' at index {index}")
