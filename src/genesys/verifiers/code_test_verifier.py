@@ -288,3 +288,6 @@ class CodeVerifier(BaseVerifier):
                 return self._verify_interpreted_code(container, code, test_cases, language)
             else:
                 raise ValueError("Unsupported language:", language)
+
+    def terminate(self):
+        self._close_containers()
