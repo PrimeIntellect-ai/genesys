@@ -31,42 +31,6 @@ GENESYS: Reasoning Data Generation & Verification
 ---
 
 
-Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().
-
-The library has two main entrypoints: 
-- `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
-- `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers
-
-
-
-
-
----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Usage
 
 ## Installation
