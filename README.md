@@ -21,14 +21,14 @@ The library has two main entrypoints:
 
 # Usage
 
-### Installation
+## Installation
 
 **Quick Install:** Run the following command for a quick install:
 ```
 curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
 ```
 
-### Data Generation
+## Data Generation
 
 To check that your installation has succeeded, you can run the following command to generate data with a small model:
 
@@ -56,7 +56,7 @@ Your file with responses will be saved to `/output`.
 sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/genesys/generate.py @ configs/debug.toml
 ```
 
-### Verification
+## Verification
 
 To verify model responses, you can use the `src/genesys/verify.py` script along with the output file from `src/genesys/generate.py` located in `output`.
 
@@ -66,7 +66,7 @@ uv run python src/genesys/verify.py --file <path-to-out-file> # output file is u
 
 The verification loop runs asynchronously to parallelize verification and speed up processing. .
 
-### Adding Tasks & Verifiers
+## Adding Tasks & Verifiers
 
 You might want to run your own
 ### running test
