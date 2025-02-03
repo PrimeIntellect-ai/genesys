@@ -11,7 +11,7 @@ import pynvml
 
 class PrimeMetric:
     """
-    A class to log metrics to Prime Minor via Unix socket.
+    A class to log metrics to Prime Miner via Unix socket.
 
     Periodically collects and logs system metrics including CPU, memory and GPU usage.
 
