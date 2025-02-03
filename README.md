@@ -9,13 +9,13 @@
 GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-  | <a href=""><b>Blog</b></a> 
-  | <a href=""><b>X Thread</b></a> 
-  | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
+  | <a href=""><b>Sami Jaghouar</b></a> 
+  | <a href=""><b>Jack Min Ong</b></a> 
+  | <a href=""><b>Michael Kleibinger</b></a> |
   <br />
   <!-- Add more text or links on a new line here -->
-  | <a href=""><b>Additional Link 1</b></a> 
-  | <a href=""><b>Additional Link 2</b></a> |
+  | <a href=""><b>Fares Obeid</b></a> 
+  | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
 
 ---
