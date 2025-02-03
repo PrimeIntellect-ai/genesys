@@ -124,7 +124,7 @@ class LengthVerifier(BaseVerifier):
         Required: this example verify function checks the length of the llm response
         and rewards responses over a threshold specified in the dataset.
 
-        The output should be a
+        The output should be a dict with a score from 0-1 and a 'verification_result_info' dict containing metadata
         """
         response = result["llm_response"]
         threshold_small = result["verification_info"]["length_threshold_small"]
