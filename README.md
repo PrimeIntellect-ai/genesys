@@ -12,9 +12,10 @@ GENESYS: Reasoning Data Generation & Verification
 
 ---
 
-## Overview
 
-Genesys is a library for synthetic reasoning data generation and verification. It is 
+Genesys is a library for synthetic reasoning data generation and verification. It is used to generate [SYNTHETIC-1]()
+
+## Usage
 
 quick install (only will work when repo got open source)
 ```
