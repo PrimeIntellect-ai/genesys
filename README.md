@@ -4,7 +4,7 @@
 <img src="https://github.com/user-attachments/assets/51e44795-5206-49d6-a12a-ecacd2799df2" alt="Prime Intellect" style="width: 100%; height: auto;"/>
 
 <h3 align="center">
-GENESYS: Synthetic Reasoning Data & Verification
+GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
 | <a href="https://docs.vllm.ai"><b>Blog</b></a> | <a href="https://vllm.ai"><b>SYNTHETIC-1</b></a> | <a href="https://arxiv.org/abs/2309.06180"><b>Paper</b></a> | <a href="https://slack.vllm.ai"><b>Prime Intellect</b></a> |
