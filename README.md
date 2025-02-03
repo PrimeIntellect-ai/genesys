@@ -19,7 +19,7 @@ GENESYS: Reasoning Data Generation & Verification
   | <a href=""><b>Fares Obeid</b></a> 
   | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
-<br><br> <!-- Extra spacing here -->
+<br> <!-- Extra spacing here -->
 
 
 <h3 align="center">
@@ -27,9 +27,9 @@ GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
   Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().The library has two main entrypoints: A generate script is used to sample responses to tasks from a given dataset using a teacher model. The verify entrypoint is used to verify responses and assign rewards using verifiers. The library was built to be extendable with custom verifiers and tasks. Genesys also features flexible integration with advanced language models, enabling dynamic creation of diverse and highly specific reasoning scenarios. This approach allows for rigorous testing and more robust model training, ultimately helping developers ensure that their AI models are equipped to handle complex real-world tasks. Furthermore, Genesys’ modular structure encourages collaboration and scalability, making it suitable for both academic research and industrial applications. By uniting data generation and verification under a single framework, Genesys provides a comprehensive tool for building, evaluating, and iterating on AI-driven solutions.
-
 </p>
 
+<br> <!-- Extra spacing here -->
 
 # Usage
 
