@@ -65,7 +65,7 @@ REMOVED_EXPRESSIONS = [
 
 class MathVerifier(BaseVerifier):
     max_parallel = 10
-    timeout = 20
+    timeout = 60
 
     def verify(self, result: Dict) -> int:
         """
