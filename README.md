@@ -7,7 +7,7 @@
 GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-| <a href=""><b>Blog</b></a> | <a href=""><b>Twitter / X </b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
+| <a href=""><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
 </p>
 
 ---
