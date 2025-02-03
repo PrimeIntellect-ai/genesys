@@ -5,9 +5,9 @@
 
 ---
 
-<h3 align="center">
+<h2 align="center">
 GENESYS: Reasoning Data Generation & Verification
-</h3>
+</h2>
 <p align="center">
   | <a href=""><b>Sami Jaghouar</b></a> 
   | <a href=""><b>Jack Min Ong</b></a> 
@@ -20,6 +20,13 @@ GENESYS: Reasoning Data Generation & Verification
   | <a href=""><b>Johannes Hagemann</b></a> |
 </p>
 
+
+<h3 align="center">
+  Abstract
+</h3>
+<p align="center">
+  Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().The library has two main entrypoints: `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model. `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers. The library was built to be extendable.
+</p>
 ---
 
 
