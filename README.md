@@ -5,31 +5,22 @@
 
 ---
 
-<h2 align="center">
-GENESYS: Reasoning Data Generation & Verification
-</h2>
-<p align="center">
-  | <a href=""><b>Sami Jaghouar</b></a> 
-  | <a href=""><b>Jack Min Ong</b></a> 
-  | <a href=""><b>Michael Kleibinger</b></a> |
-  <br />
-  | <a href=""><b>Manveer Basra</b></a> 
-  | <a href=""><b>Jannik Straube</b></a> |
-  <br />
-  | <a href=""><b>Fares Obeid</b></a> 
-  | <a href=""><b>Johannes Hagemann</b></a> |
-</p>
-<br> <!-- Extra spacing here -->
-
-
 <h3 align="center">
-  Abstract
+GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-  Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().The library has two main entrypoints: A generate script is used to sample responses to tasks from a given dataset using a teacher model. The verify entrypoint is used to verify responses and assign rewards using verifiers. The library was built to be extendable with custom verifiers and tasks. Genesys also features flexible integration with advanced language models, enabling dynamic creation of diverse and highly specific reasoning scenarios. This approach allows for rigorous testing and more robust model training, ultimately helping developers ensure that their AI models are equipped to handle complex real-world tasks.
+| <a href=""><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
 </p>
 
-<br> <!-- Extra spacing here -->
+---
+
+
+Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().
+
+The library has two main entrypoints: 
+- `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
+- `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers
+
 
 # Usage
 
@@ -173,36 +164,3 @@ VERIFIER_REGISTRY = {
 ```
 
 Every task from your dataset with `"task_type": "length_adherance" will now be verified with the implemented length verifier when running `src/genesys/verify.py`.
-
-
-
-
-
-
-
-
----
-
-<p align="center">
-</p>
-
-<img src="https://github.com/user-attachments/assets/51e44795-5206-49d6-a12a-ecacd2799df2" alt="Prime Intellect" style="width: 100%; height: auto;"/>
-
----
-
-<h3 align="center">
-GENESYS: Reasoning Data Generation & Verification
-</h3>
-<p align="center">
-| <a href=""><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
-</p>
-
----
-
-
-Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().
-
-The library has two main entrypoints: 
-- `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
-- `src/genesys/verify.py` is used to verify responses and assign rewards using verifiers
-
