@@ -3,8 +3,8 @@
 
 <img src="https://github.com/user-attachments/assets/3aab8c39-30a9-4f67-8106-4541b613f2af" alt="Prime Intellect" style="width: 100%; height: auto;"/>
 
-<p align="center">
-Test
+<h3 align="center">
+Genesys: Synthetic Reasoning Data & Verification
 </p>
 <p>
   
