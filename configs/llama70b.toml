@@ -5,6 +5,5 @@ temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
 top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
 
 [data]
-max_samples = 2000000
 batch_size = 512
 path = "justus27/test-vcu,justus27/test-vfc,justus27/test-jdg,justus27/test-vfm"
