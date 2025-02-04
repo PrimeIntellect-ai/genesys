@@ -1,3 +1,4 @@
+import os
 from typing import Generator
 from pydantic_config import BaseConfig
 from datasets import load_dataset
@@ -135,4 +136,6 @@ class DataLoaderGenesys:
     def log_progress_prime(self, paths: list[str], dataset_counters: list[int]):
         metric = {path: counter for path, counter in zip(paths, dataset_counters)}
         metric.update({"total": sum(dataset_counters)})
+
+        metric = {os.path.join("dashbord-progress", key): value for key, value in metric.items()}
         self.prime_metric.log_prime(metric)
