@@ -1,4 +1,4 @@
-name_model = "deepseek-ai/DeepSeek-R1"
+name_model = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
 num_gpus = 8
 sample_per_file = 512
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
