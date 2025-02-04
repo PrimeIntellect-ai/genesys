@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# capture both stdout and stderr
-exec 3>&1  # save original stdout
-output=$(uv run python src/genesys/auto_detect_model_config.py 2>&1 >&3)
-exit_code=$?
+# Save the original stdout to FD 3
+exec 3>&1
+
+# Capture both stdout and stderr while also printing to terminal
+output=$(uv run python src/genesys/auto_detect_model_config.py 2>&1 | tee /dev/fd/3)
+exit_code=${PIPESTATUS[0]}
 
 if [ $exit_code -ne 0 ]; then
     echo "Error: $output"
@@ -12,4 +14,4 @@ fi
 
 model_name=$output
 echo "The model to run is: $model_name"
-uv run python src/genesys/generate.py @ configs/$model_name.toml
+uv run python src/genesys/generate.py @ configs/"$model_name".toml
