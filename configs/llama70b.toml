@@ -9,4 +9,5 @@ gcp_bucket = "gs://synthetic-1/generated_dataset/llama70b"
 [data]
 batch_size = 512
 path = "PrimeIntellect/verifiable-coding-problems,PrimeIntellect/verifiable-math-problems,PrimeIntellect/synthetic-code-understanding,PrimeIntellect/real-world-swe-problems,PrimeIntellect/stackexchange-question-answering"
+ratios ="0.1,0.5,0.05,0.05,0.3"
 prime_log = true
