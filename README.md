@@ -27,9 +27,28 @@ The library has two main entrypoints:
 ## Installation
 
 **Quick Install:** Run the following command for a quick install:
+
+
 ```
 curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
 ```
+
+or follow this steps to install manually
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+```
+
+then
+
+```bash
+git clone git@github.com:PrimeIntellect-ai/genesys.git
+cd genesys
+uv venv --python 3.12
+uv sync --extra sglang
+```
+
 
 ## Data Generation
 
