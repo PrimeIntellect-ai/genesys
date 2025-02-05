@@ -3,8 +3,8 @@ num_gpus = 8
 sample_per_file = 512
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
 top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
+max_tokens = 12288
 
 [data]
-max_samples = 2000000
 batch_size = 512
-path = "justus27/test-vcu,justus27/test-vfc,justus27/test-jdg,justus27/test-vfm"
+path = "PrimeIntellect/verifiable-coding-problems,PrimeIntellect/verifiable-math-problems,PrimeIntellect/synthetic-code-understanding,PrimeIntellect/real-world-swe-problems,PrimeIntellect/stackexchange-question-answering"

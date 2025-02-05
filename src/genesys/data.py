@@ -1,10 +1,11 @@
+import os
 from typing import Generator
 from pydantic_config import BaseConfig
 from datasets import load_dataset
 import rich.progress
 from transformers import AutoTokenizer
 import random
-from genesys.utils import log_prime
+from genesys.prime_metrics import PrimeMetric
 
 
 class DataConfig(BaseConfig):
@@ -17,6 +18,8 @@ class DataConfig(BaseConfig):
     shuffle: bool = True
 
     prime_log: bool = False
+
+    prime_log_freq: int = 5
 
 
 def repeat_elements(lst, n):
@@ -44,8 +47,7 @@ class DataLoaderGenesys:
         datasets = [load_dataset(path)["train"] for path in self.paths]
 
         if config.shuffle:
-            for dataset in datasets:
-                dataset = dataset.shuffle()
+            datasets = [data.shuffle() for data in datasets]
 
         if config.ratio is not None:
             ratio = [float(r) for r in config.ratio.split(",")]
@@ -85,6 +87,8 @@ class DataLoaderGenesys:
             self.progress_bars.add_task(f"{self.paths[i].split('/')[-1]}", total=length)
             for i, length in enumerate(self.dataset_lengths)
         ]
+
+        self.prime_metric = PrimeMetric(disable=not (config.prime_log), period=config.prime_log_freq)
 
     def _prepare_batch(self, batch: dict, dataset: str) -> tuple:
         batch = repeat_elements(
@@ -130,7 +134,8 @@ class DataLoaderGenesys:
                     break
 
     def log_progress_prime(self, paths: list[str], dataset_counters: list[int]):
-        if self.config.prime_log:
-            metric = {path: counter for path, counter in zip(paths, dataset_counters)}
-            metric.update({"total": sum(dataset_counters)})
-            log_prime(metric)
+        metric = {path: counter for path, counter in zip(paths, dataset_counters)}
+        metric.update({"total": sum(dataset_counters)})
+
+        metric = {os.path.join("dashbord-progress", key): value for key, value in metric.items()}
+        self.prime_metric.log_prime(metric)

@@ -1,13 +1,13 @@
 from genesys.utils import extract_json
-from genesys.schemas import UnscoredResult
+from genesys.schemas import Response
 from genesys.verifiers.base_verifier import BaseVerifier
 
 
 class CodeUnderstandingVerifier(BaseVerifier):
     max_parallel = 30
-    timeout = None  # No explicit timeout needed
+    timeout = 20
 
-    def verify(self, result: UnscoredResult):
+    def verify(self, result: Response):
         """
         Verifies whether the output predicted by the LLM matches the ground truth.
 
