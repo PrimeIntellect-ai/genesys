@@ -183,3 +183,13 @@ VERIFIER_REGISTRY = {
 ```
 
 Every task from your dataset with `"task_type": "length_adherance"` will now be verified with the implemented length verifier when running `src/genesys/verify.py`.
+
+
+## Pushing data to gcp bucket
+
+For pushing the data to s3/gcp bucket, you have to download a service account key file with the permission to push to your bucket, encode it to base64 and set the encoded file as `GCP_CREDENTIALS_BASE64`. Then you can specify your bucket via the `--gcp_bucket` flag
+
+```
+export GCP_CREDENTIALS_BASE64=$(base64 -w 0 /path/to/your/service-account-key.json)
+uv run python src/genesys/generate.py @ configs/debug.toml --gcp_bucket checkpoints_pi/test_data
+```
