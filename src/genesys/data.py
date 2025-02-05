@@ -94,9 +94,9 @@ class DataLoaderGenesys:
         batch = repeat_elements(
             [b for b in batch], self.config.num_responses_per_question
         )  # turn hf dataset slice into list
-        batch_messages = [[{"role": "user", "content": b["prompt"]}] for b in batch]
+        batch_messages = [[{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch]
 
-        batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, add_generation_prompt=True)
+        batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
 
         return batch_inputs, batch
 
