@@ -10,7 +10,7 @@ from genesys.prime_metrics import PrimeMetric
 
 class DataConfig(BaseConfig):
     path: str = "PrimeIntellect/verifiable-tasks"
-    ratio: list[float] | None = None
+    ratio: str | None = None
     max_samples: int | None = None
     batch_size: int = 10_000
     num_responses_per_question: int = 1
