@@ -12,6 +12,7 @@ if [ $exit_code -ne 0 ]; then
     exit $exit_code
 fi
 
-model_name=$output
+# Extract the last line of the output, which should be the model name
+model_name=$(echo "$output" | tail -n 1)
 echo "The model to run is: $model_name"
 uv run python src/genesys/generate.py @ configs/"$model_name".toml
