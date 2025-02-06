@@ -9,13 +9,13 @@
 GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-| <a href=""><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href=""><b>SYNTHETIC-1 Dashboard</b></a> |
+| <a href="https://www.primeintellect.ai/blog/synthetic-1"><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href="https://app.primeintellect.ai/intelligence/synthetic-1"><b>SYNTHETIC-1 Dashboard</b></a> |
 </p>
 
 ---
 
 
-Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1]().
+Genesys is a library for synthetic reasoning data generation and verification, used to generate [SYNTHETIC-1](https://huggingface.co/collections/PrimeIntellect/synthetic-1-67a2c399cfdd6c9f7fae0c37).
 
 The library has two main entrypoints: 
 - `src/genesys/generate.py` is used to sample responses to tasks from a given dataset using a teacher model.
