@@ -124,6 +124,7 @@ class Response(BaseModel):
     response_id: str
     model_name: str
     generation_config: Dict # sampling parameters
+    machine_info: Dict
 ```
 
 ### Adding a Verifier
