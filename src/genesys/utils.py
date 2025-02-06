@@ -137,7 +137,7 @@ def extract_json(text):
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
 
-def get_machine_info():
+def get_machine_info() -> dict[str, str | int]:
     """
     gather info about the node we're running on
     """
