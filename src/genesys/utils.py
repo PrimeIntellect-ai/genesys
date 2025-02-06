@@ -4,7 +4,10 @@ import re
 import string
 import random
 import base64
+import torch
+import socket
 import threading
+import requests
 
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -133,3 +136,40 @@ def extract_json(text):
         return json.loads(json_str)
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
+
+def get_machine_info():
+    """
+    gather info about the node we're running on
+    """
+    try:
+        with open("/etc/machine-id", "r") as f:
+            machine_id = f.read().strip()
+    except Exception:
+        machine_id = None
+
+    try:
+        num_gpus = torch.cuda.device_count()
+        gpu_device_list = [torch.cuda.get_device_name(i) for i in range(num_gpus)]
+    except Exception:
+        num_gpus = 0
+        gpu_device_list = []
+
+    try:
+        global_ipv4 = requests.get('https://icanhazip.com', timeout=5).text.strip()
+    except Exception:
+        global_ipv4 = None
+
+    try:
+        global_ipv6 = socket.getaddrinfo('icanhazip.com', 443, socket.AF_INET6)[0][4][0]
+    except Exception:
+        global_ipv6 = None
+
+    info_dict = {
+        "machine_id": machine_id,
+        "num_gpus": num_gpus,
+        "gpu_device_list": gpu_device_list,
+        "global_ipv4": global_ipv4,
+        "global_ipv6": global_ipv6
+    }
+
+    return info_dict
