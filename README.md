@@ -9,7 +9,7 @@
 GENESYS: Reasoning Data Generation & Verification
 </h3>
 <p align="center">
-| <a href="https://www.primeintellect.ai/blog/synthetic-1"><b>Blog</b></a> | <a href=""><b>X Thread</b></a> | <a href="https://app.primeintellect.ai/intelligence/synthetic-1"><b>SYNTHETIC-1 Dashboard</b></a> |
+| <a href="https://www.primeintellect.ai/blog/synthetic-1"><b>Blog</b></a> | <a href="https://x.com/PrimeIntellect/status/1887635142644277692"><b>X Thread</b></a> | <a href="https://app.primeintellect.ai/intelligence/synthetic-1"><b>SYNTHETIC-1 Dashboard</b></a> |
 </p>
 
 ---
