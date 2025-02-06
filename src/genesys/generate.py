@@ -5,6 +5,8 @@ from pydantic_config import parse_argv, BaseConfig
 from pydantic import model_validator
 from transformers import AutoTokenizer
 from rich.console import Console
+from huggingface_hub import snapshot_download
+
 from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id
 from genesys.data import DataConfig, DataLoaderGenesys
 
@@ -23,6 +25,8 @@ class GenerateConfig(BaseConfig):
     gcp_bucket: str | None = None  # optional, if provided, will save the each file with sample_per_file  to GCP
     sample_per_file: int = 10_000  # how much sample each file contains
     path_output: str = "output"
+
+    pre_download_model: bool = False
 
     @model_validator(mode="after")
     def check_batch_size(self):
@@ -51,6 +55,10 @@ def main(config: GenerateConfig):
         if config.gcp_bucket is not None
         else None
     )
+
+    if config.pre_download_model:
+        console.print("\n[cyan] Pre-downloading model...[/]\n")
+        snapshot_download(repo_id=config.name_model, local_files_only=False, resume_download=True)
 
     console.print("\n[cyan] Loading model and Engine...[/]\n")
 
