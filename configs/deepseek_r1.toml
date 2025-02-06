@@ -4,7 +4,7 @@ sample_per_file = 512
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
 top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
 max_tokens = 12288
-
+path_output = "/data"
 gcp_bucket = "gs://synthetic-1-datasets/generated_dataset/deepseek_r1"
 
 [data]
