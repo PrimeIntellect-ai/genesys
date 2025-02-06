@@ -42,6 +42,7 @@ def main(config: GenerateConfig):
     console.print("\n[bold yellow] Loading model and initializing pipeline...[/]\n")
 
     # Initialize components
+    console.print("\n[cyan] Configuring output path and gcp bucket...[/]\n")
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
     gcp_bucket = (
@@ -49,8 +50,15 @@ def main(config: GenerateConfig):
         if config.gcp_bucket is not None
         else None
     )
+
+    console.print("\n[cyan] Loading model and Engine...[/]\n")
+
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
+
+    console.print("\n[cyan] Loading tokenizer...[/]\n")
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
+
+    console.print("\n[cyan] Loading dataloader...[/]\n")
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
     machine_info = get_machine_info()
 
