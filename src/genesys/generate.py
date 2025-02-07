@@ -5,9 +5,8 @@ from pydantic_config import parse_argv, BaseConfig
 from pydantic import model_validator
 from transformers import AutoTokenizer
 from rich.console import Console
+from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id, get_machine_info
 from huggingface_hub import snapshot_download
-
-from genesys.utils import GcpBucket, display_config_panel, save_batch_results, generate_short_id
 from genesys.data import DataConfig, DataLoaderGenesys
 
 
@@ -43,7 +42,6 @@ def main(config: GenerateConfig):
     # Initial welcome table
     display_config_panel(console, config)
 
-    # Loading message
     console.print("\n[bold yellow] Loading model and initializing pipeline...[/]\n")
 
     # Initialize components
@@ -69,8 +67,8 @@ def main(config: GenerateConfig):
 
     console.print("\n[cyan] Loading dataloader...[/]\n")
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
+    machine_info = get_machine_info()
 
-    # Ready message
     console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
 
     # Rest of the generation logic
@@ -85,6 +83,7 @@ def main(config: GenerateConfig):
             batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
             batch_element["model_name"] = config.name_model
             batch_element["generation_config"] = sampling_params
+            batch_element["machine_info"] = machine_info
             all_results.append(batch_element)
         total_samples += len(batch)
 
