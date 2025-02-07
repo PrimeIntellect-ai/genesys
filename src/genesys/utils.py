@@ -18,6 +18,7 @@ from rich.text import Text
 from rich import box
 from rich.console import Console
 from huggingface_hub import snapshot_download
+from datasets import load_dataset
 
 
 class GcpBucket:
@@ -184,7 +185,30 @@ def download_model(name_model: str, pre_download_retry: int, console):
             snapshot_download(repo_id=name_model, local_files_only=False, resume_download=True)
             break
         except Exception as e:
-            console.print("[red]Failed to pre-download model, retrying...[/]")
-            console.print(f"[red]Error: {e}[/]")
             wait_times = [5, 30, 300]
-            time.sleep(wait_times[min(i, len(wait_times) - 1)])  # 5s, 30s, then 5min onwards
+            t = wait_times[min(i, len(wait_times) - 1)]
+
+            console.print(f"[red]Failed to pre-download model, retrying in {t} seconds [/]")
+            console.print(f"[red]Error: {e}[/]")
+            time.sleep(t)
+
+            if i == pre_download_retry - 1:
+                raise e
+
+
+def load_dataset_ft(path: str, retry: int = 1):
+    console = Console()
+
+    for i in range(retry):
+        try:
+            return load_dataset(path)["train"]
+        except Exception as e:
+            wait_times = [2, 10, 60]
+            t = wait_times[min(i, len(wait_times) - 1)]
+
+            console.print(f"[red]Failed to pre-download model, retrying in {t} seconds [/]")
+            console.print(f"[red]Error: {e}[/]")
+            time.sleep(t)
+
+            if i == retry - 1:
+                raise e
