@@ -6,7 +6,7 @@ from transformers import AutoTokenizer
 import random
 from genesys.prime_metrics import PrimeMetric
 
-from genesys.utils import load_dataset_ft
+from genesys.utils import load_dataset_ft, log
 
 
 class DataConfig(BaseConfig):
@@ -143,4 +143,5 @@ class DataLoaderGenesys:
         metric.update({"total": sum(dataset_counters)})
 
         metric = {os.path.join("dashbord-progress", key): value for key, value in metric.items()}
+        log(metric)
         self.prime_metric.log_prime(metric)
