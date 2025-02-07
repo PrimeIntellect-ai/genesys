@@ -4,6 +4,7 @@ import re
 import string
 import random
 import base64
+import time
 import torch
 import socket
 import threading
@@ -16,6 +17,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich import box
 from rich.console import Console
+from huggingface_hub import snapshot_download
 
 
 class GcpBucket:
@@ -137,6 +139,7 @@ def extract_json(text):
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from the extracted content")
 
+
 def get_machine_info() -> dict[str, str | int]:
     """
     gather info about the node we're running on
@@ -155,12 +158,12 @@ def get_machine_info() -> dict[str, str | int]:
         gpu_device_list = []
 
     try:
-        global_ipv4 = requests.get('https://icanhazip.com', timeout=5).text.strip()
+        global_ipv4 = requests.get("https://icanhazip.com", timeout=5).text.strip()
     except Exception:
         global_ipv4 = None
 
     try:
-        global_ipv6 = socket.getaddrinfo('icanhazip.com', 443, socket.AF_INET6)[0][4][0]
+        global_ipv6 = socket.getaddrinfo("icanhazip.com", 443, socket.AF_INET6)[0][4][0]
     except Exception:
         global_ipv6 = None
 
@@ -169,7 +172,19 @@ def get_machine_info() -> dict[str, str | int]:
         "num_gpus": num_gpus,
         "gpu_device_list": gpu_device_list,
         "global_ipv4": global_ipv4,
-        "global_ipv6": global_ipv6
+        "global_ipv6": global_ipv6,
     }
 
     return info_dict
+
+
+def download_model(name_model: str, pre_download_retry: int, console):
+    for i in range(pre_download_retry):
+        try:
+            snapshot_download(repo_id=name_model, local_files_only=False, resume_download=True)
+            break
+        except Exception as e:
+            console.print("[red]Failed to pre-download model, retrying...[/]")
+            console.print(f"[red]Error: {e}[/]")
+            wait_times = [5, 30, 300]
+            time.sleep(wait_times[min(i, len(wait_times) - 1)])  # 5s, 30s, then 5min onwards

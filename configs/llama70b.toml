@@ -6,7 +6,7 @@ top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
 max_tokens = 12288
 path_output = "/data"
 gcp_bucket = "gs://synthetic-1-datasets/generated_dataset/llama70b"
-pre_download_model = true
+pre_download_retry = 3
 
 [data]
 batch_size = 512
