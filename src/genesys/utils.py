@@ -179,7 +179,15 @@ def get_machine_info() -> dict[str, str | int]:
     return info_dict
 
 
-def download_model(name_model: str, pre_download_retry: int, console):
+def download_model(name_model: str, pre_download_retry: int):
+    """Download a model from HuggingFace Hub with retries with exponential backoff.
+
+    Args:
+        name_model (str): HuggingFace model name
+        pre_download_retry (int): Number of retry attempts.
+    """
+    console = Console()
+
     for i in range(pre_download_retry):
         try:
             snapshot_download(repo_id=name_model, local_files_only=False, resume_download=True)
@@ -196,7 +204,13 @@ def download_model(name_model: str, pre_download_retry: int, console):
                 raise e
 
 
-def load_dataset_ft(path: str, retry: int = 1):
+def load_dataset_ft(path: str, retry):  # -> Dataset | List | Any | None:
+    """Load a dataset from HuggingFace Hub with retries with exponential backoff.
+
+    Args:
+        path (str): HuggingFace dataset path/name
+        retry (int): Number of retry attempts.
+    """
     console = Console()
 
     for i in range(retry):

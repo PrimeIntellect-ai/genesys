@@ -22,7 +22,7 @@ class DataConfig(BaseConfig):
 
     prime_log_freq: int = 5
 
-    retry_download: int = 3
+    retry_download: int = 2
 
 
 def repeat_elements(lst, n):

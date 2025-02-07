@@ -62,7 +62,7 @@ def main(config: GenerateConfig):
 
     if config.pre_download_retry > 0:
         console.print("\n[cyan] Pre-downloading model...[/]\n")
-        download_model(config.name_model, config.pre_download_retry, console)
+        download_model(config.name_model, config.pre_download_retry)
 
     console.print("\n[cyan] Loading model and Engine...[/]\n")
 
