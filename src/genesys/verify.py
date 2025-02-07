@@ -53,7 +53,7 @@ async def verify(results: List[Response]) -> List[Any]:
                 verification_results[index] = {"score": None, "verification_result_info": {"failure_reason": "timeout"}}
             except Exception as e:
                 print(f"Error verifying '{ttype}' at index {index}")
-                verification_results[index] = {"score": None, "verification_result_info": {"failure_reason": e}}
+                verification_results[index] = {"score": None, "verification_result_info": {"failure_reason": str(e)}}
 
     tasks = [asyncio.create_task(process_result(i, r)) for i, r in enumerate(results)]
     for task in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="Verifying"):
