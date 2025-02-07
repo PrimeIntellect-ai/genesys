@@ -1,11 +1,12 @@
 import os
 from typing import Generator
 from pydantic_config import BaseConfig
-from datasets import load_dataset
 import rich.progress
 from transformers import AutoTokenizer
 import random
 from genesys.prime_metrics import PrimeMetric
+
+from genesys.utils import load_dataset_ft
 
 
 class DataConfig(BaseConfig):
@@ -20,6 +21,8 @@ class DataConfig(BaseConfig):
     prime_log: bool = False
 
     prime_log_freq: int = 5
+
+    retry_download: int = 2
 
 
 def repeat_elements(lst, n):
@@ -44,7 +47,7 @@ class DataLoaderGenesys:
 
         self.paths = list(config.path.split(","))
 
-        datasets = [load_dataset(path)["train"] for path in self.paths]
+        datasets = [load_dataset_ft(path, config.retry_download) for path in self.paths]
 
         if config.shuffle:
             datasets = [data.shuffle() for data in datasets]
@@ -94,7 +97,9 @@ class DataLoaderGenesys:
         batch = repeat_elements(
             [b for b in batch], self.config.num_responses_per_question
         )  # turn hf dataset slice into list
-        batch_messages = [[{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch]
+        batch_messages = [
+            [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
+        ]
 
         batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
 
