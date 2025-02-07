@@ -4,7 +4,6 @@ import sglang as sgl
 from pydantic_config import parse_argv, BaseConfig
 from pydantic import model_validator
 from transformers import AutoTokenizer
-from rich.console import Console
 from genesys.utils import (
     GcpBucket,
     display_config_panel,
@@ -12,6 +11,8 @@ from genesys.utils import (
     save_batch_results,
     generate_short_id,
     get_machine_info,
+    log,
+    console,
 )
 from genesys.data import DataConfig, DataLoaderGenesys
 
@@ -43,15 +44,13 @@ class GenerateConfig(BaseConfig):
 
 
 def main(config: GenerateConfig):
-    console = Console()
-
     # Initial welcome table
     display_config_panel(console, config)
 
-    console.print("\n[bold yellow] Loading model and initializing pipeline...[/]\n")
+    log("[bold yellow] Loading model and initializing pipeline...[/]")
 
     # Initialize components
-    console.print("\n[cyan] Configuring output path and gcp bucket...[/]\n")
+    log("[cyan] Configuring output path and gcp bucket...[/]")
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
     gcp_bucket = (
@@ -61,21 +60,21 @@ def main(config: GenerateConfig):
     )
 
     if config.pre_download_retry > 0:
-        console.print("\n[cyan] Pre-downloading model...[/]\n")
+        log("[cyan] Pre-downloading model...[/]")
         download_model(config.name_model, config.pre_download_retry)
 
-    console.print("\n[cyan] Loading model and Engine...[/]\n")
+    log("[cyan] Loading model and Engine...[/]")
 
     llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
 
-    console.print("\n[cyan] Loading tokenizer...[/]\n")
+    log("[cyan] Loading tokenizer...[/]")
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
-    console.print("\n[cyan] Loading dataloader...[/]\n")
+    log("[cyan] Loading dataloader...[/]")
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
     machine_info = get_machine_info()
 
-    console.print("[bold green]✨ Setup complete! Starting generation...\n[/]")
+    log("[bold green]✨ Setup complete! Starting generation...[/]")
 
     # Rest of the generation logic
     sampling_params = dict(temperature=config.temperature, top_p=config.top_p, max_new_tokens=config.max_tokens)
@@ -99,7 +98,7 @@ def main(config: GenerateConfig):
             save_batch_results(all_results, file, gcp_bucket)
             all_results = []
 
-    console.print(f"[bold green]✨ Generation complete! Total samples: {total_samples}[/]")
+    log(f"[bold green]✨ Generation complete! Total samples: {total_samples}[/]")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import re
@@ -226,3 +227,12 @@ def load_dataset_ft(path: str, retry):  # -> Dataset | List | Any | None:
 
             if i == retry - 1:
                 raise e
+
+
+console = Console()
+
+
+def log(message):
+    """For some reason Sglang silence real pyton logger so had to use this cheap fake logging"""
+    formatted_message = f"[{datetime.now().strftime('%H:%M:%S')}]: {message}"
+    console.print(formatted_message)
