@@ -15,6 +15,7 @@ class DataConfig(BaseConfig):
     max_samples: int | None = None
     batch_size: int = 10_000
     num_responses_per_question: int = 1
+    continued_generation: bool = False
 
     shuffle: bool = True
 
@@ -97,9 +98,18 @@ class DataLoaderGenesys:
         batch = repeat_elements(
             [b for b in batch], self.config.num_responses_per_question
         )  # turn hf dataset slice into list
-        batch_messages = [
-            [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
-        ]
+        if self.config.continued_generation:
+            batch_messages = [
+                [
+                    {"role": "user", "content": b["prompt"]},
+                    {"role": "assistant", "content": "<think>/n" + b["llm_response"]},
+                ]
+                for b in batch
+            ]
+        else:
+            batch_messages = [
+                [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
+            ]
 
         batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
 
