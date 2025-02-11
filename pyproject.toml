@@ -30,7 +30,6 @@ sglang = [
     "fastapi",
     "uvicorn",
     "vllm",
-    "flashinfer",
     "sgl-kernel>=0.0.3.post3"
 ]
 
@@ -55,5 +54,5 @@ dev-dependencies = ["ruff>=0.5.0", "pre-commit>=3.0.0","pytest>=7.0.0", "faker>=
 
 [[tool.uv.index]]
 name = "flash-infer"
-url = "https://flashinfer.ai/whl/cu124/torch2.4"
+url = "https://flashinfer.ai/whl/cu124/torch2.5/"
 explicit = true
