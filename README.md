@@ -30,7 +30,7 @@ The library has two main entrypoints:
 
 
 ```
-curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/main/scripts/install/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/PrimeIntellect-ai/genesys/refs/heads/main/script/install.sh | bash
 ```
 
 or follow this steps to install manually
