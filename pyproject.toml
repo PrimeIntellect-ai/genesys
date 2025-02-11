@@ -21,7 +21,7 @@ dependencies = [
 
 
 sglang = [
-    "sglang[srt]>=0.4.1",
+    "sglang[srt]>=0.4.2.post4",
     "sympy",
     "uvloop",
     "psutil",
@@ -31,6 +31,7 @@ sglang = [
     "uvicorn",
     "vllm",
     "flashinfer",
+    "sgl-kernel>=0.0.3.post3"
 ]
 
 [tool.hatch.metadata]
