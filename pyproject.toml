@@ -21,7 +21,7 @@ dependencies = [
 
 
 sglang = [
-    "sglang[srt]>=0.4.2.post4",
+    "sglang[srt] @ git+https://github.com/sgl-project/sglang.git@fdf04a1#subdirectory=python",
     "sympy",
     "uvloop",
     "psutil",
