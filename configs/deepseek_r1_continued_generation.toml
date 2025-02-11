@@ -4,14 +4,13 @@ sample_per_file = 512
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
 top_p = 0.95 # 0.95 is the value from the R1 model card for evaluation
 max_tokens = 12288
-path_output = "/data"
+path_output = "data"
 gcp_bucket = "gs://synthetic-1-datasets/generated_dataset/deepseek_r1_continued_generation"
 pre_download_retry = 3
 
 [data]
 batch_size = 512
 path = "felix-red-panda/reasoning_traces_too_long_v1"
-ratio = "0.1,0.5,0.05,0.05,0.3"
 prime_log = true
 retry_download = 3
 continued_generation=true
