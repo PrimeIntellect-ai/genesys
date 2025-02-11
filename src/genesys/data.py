@@ -15,7 +15,7 @@ class DataConfig(BaseConfig):
     max_samples: int | None = None
     batch_size: int = 10_000
     num_responses_per_question: int = 1
-    num_responses_per_question = False
+    continued_generation: bool = False
 
     shuffle: bool = True
 
@@ -100,7 +100,11 @@ class DataLoaderGenesys:
         )  # turn hf dataset slice into list
         if self.config.continued_generation:
             batch_messages = [
-                [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"+b["llm_response"]}] for b in batch
+                [
+                    {"role": "user", "content": b["prompt"]},
+                    {"role": "assistant", "content": "<think>/n" + b["llm_response"]},
+                ]
+                for b in batch
             ]
         else:
             batch_messages = [
