@@ -94,7 +94,9 @@ def main(config: GenerateConfig):
             batch_element["machine_info"] = machine_info
             batch_element["input_ids"] = batch_input
             batch_element["output_ids"] = response["token_ids"]
-            batch_element["proof"] = "".join(build_proofs_base64(response["meta_info"]["hidden_states"], 32, 128))
+            batch_element["proof"] = "".join(
+                build_proofs_base64(response["meta_info"]["hidden_states"], 32, 128, skip_prefill=True)
+            )
             all_results.append(batch_element)
         total_samples += len(batch)
 
