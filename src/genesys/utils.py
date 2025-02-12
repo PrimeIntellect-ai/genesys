@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from datetime import datetime
 import json
 import os
@@ -21,9 +20,7 @@ from rich import box
 from rich.console import Console
 from huggingface_hub import snapshot_download
 from datasets import load_dataset
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 
 class GcpBucket:
