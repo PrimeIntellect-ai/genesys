@@ -1,5 +1,5 @@
 import base64
-from .ndd import compute_newton_coefficients, evaluate_polynomial
+from genesys.toploc.ndd import compute_newton_coefficients, evaluate_polynomial
 import torch
 import logging
 
