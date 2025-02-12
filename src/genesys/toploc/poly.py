@@ -105,6 +105,6 @@ def _build_proofs(
             proofs.append(proof)
     except Exception as e:
         logger.error(f"Error building proofs: {e}")
-        proofs = [ProofPoly.null(128)] * (1 + (len(activations) - 1 + decode_batching_size) // decode_batching_size)
+        proofs = [ProofPoly.null(topk)] * (1 + (len(activations) - 1 + decode_batching_size) // decode_batching_size)
 
     return proofs
