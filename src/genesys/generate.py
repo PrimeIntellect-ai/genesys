@@ -106,7 +106,7 @@ def main(config: GenerateConfig):
             save_batch_results(all_results, file, gcp_bucket)
             file_sha = sha256sum(file)
             dataloader.prime_metric.log_prime({"file_sha": file_sha, "file_name": file_name})
-            log(f"[bold green]✨ Saved {len(all_results)} samples to {file} with sha {file_sha or "NA"}[/]")
+            log(f"[bold green]✨ Saved {len(all_results)} samples to {file} with sha {file_sha or 'NA'}[/]")
             all_results = []
 
     log(f"[bold green]✨ Generation complete! Total samples: {total_samples}[/]")
