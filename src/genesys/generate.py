@@ -15,6 +15,7 @@ from genesys.utils import (
     console,
 )
 from genesys.data import DataConfig, DataLoaderGenesys
+from genesys.toploc import build_proofs_base64
 
 
 class GenerateConfig(BaseConfig):
@@ -65,13 +66,15 @@ def main(config: GenerateConfig):
 
     log("[cyan] Loading model and Engine...[/]")
 
-    llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
+    llm = sgl.Engine(
+        model_path=config.name_model, tp_size=config.num_gpus, return_hidden_states=True, skip_tokenizer_init=True
+    )
 
     log("[cyan] Loading tokenizer...[/]")
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
     log("[cyan] Loading dataloader...[/]")
-    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
+    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, tokenize=True)
     machine_info = get_machine_info()
 
     log("[bold green]✨ Setup complete! Starting generation...[/]")
@@ -82,13 +85,16 @@ def main(config: GenerateConfig):
     total_samples = 0
 
     for batch_inputs, batch in dataloader:
-        responses = llm.generate(batch_inputs, sampling_params)
-        for batch_element, response in zip(batch, responses):
-            batch_element["llm_response"] = response["text"]
+        responses = llm.generate(input_ids=batch_inputs, sampling_params=sampling_params)
+        for batch_input, batch_element, response in zip(batch_inputs, batch, responses):
+            batch_element["llm_response"] = tokenizer.decode(response["token_ids"], skip_special_tokens=True)
             batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
             batch_element["model_name"] = config.name_model
             batch_element["generation_config"] = sampling_params
             batch_element["machine_info"] = machine_info
+            batch_element["input_ids"] = batch_input
+            batch_element["output_ids"] = response["token_ids"]
+            batch_element["proof"] = "".join(build_proofs_base64(response["meta_info"]["hidden_states"], 32, 128))
             all_results.append(batch_element)
         total_samples += len(batch)
 
