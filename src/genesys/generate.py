@@ -15,7 +15,7 @@ from genesys.utils import (
     console,
 )
 from genesys.data import DataConfig, DataLoaderGenesys
-from genesys.toploc import build_proofs_base64
+from genesys.toploc import build_proofs_base64, sha256sum
 
 
 class GenerateConfig(BaseConfig):
@@ -102,6 +102,8 @@ def main(config: GenerateConfig):
             file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.jsonl"
             file = os.path.join(config.path_output, file_name)
             save_batch_results(all_results, file, gcp_bucket)
+            file_sha = sha256sum(file)
+            dataloader.prime_metric.log_prime({"file_sha": file_sha, "file_name": file_name})
             all_results = []
 
     log(f"[bold green]✨ Generation complete! Total samples: {total_samples}[/]")
