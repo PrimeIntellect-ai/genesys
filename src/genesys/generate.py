@@ -14,6 +14,7 @@ from genesys.utils import (
     log,
     console,
 )
+from genesys.prime_metrics import PrimeMetric
 from genesys.data import DataConfig, DataLoaderGenesys
 from genesys.toploc import build_proofs_base64, sha256sum
 
@@ -47,6 +48,7 @@ class GenerateConfig(BaseConfig):
 def main(config: GenerateConfig):
     # Initial welcome table
     display_config_panel(console, config)
+    prime_metric = PrimeMetric(disable=not (config.data.prime_log), period=config.data.prime_log_freq)
 
     log("[bold yellow] Loading model and initializing pipeline...[/]")
 
@@ -74,7 +76,7 @@ def main(config: GenerateConfig):
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
     log("[cyan] Loading dataloader...[/]")
-    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, do_tokenization=True)
+    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, prime_metric=prime_metric, do_tokenization=True)
     machine_info = get_machine_info()
 
     log("[bold green]✨ Setup complete! Starting generation...[/]")
@@ -105,7 +107,7 @@ def main(config: GenerateConfig):
             file = os.path.join(config.path_output, file_name)
             save_batch_results(all_results, file, gcp_bucket)
             file_sha = sha256sum(file)
-            dataloader.prime_metric.log_prime({"file_sha": file_sha, "file_name": file_name})
+            prime_metric.log_prime({"file_sha": file_sha, "file_name": file_name})
             log(f"[bold green]✨ Saved {len(all_results)} samples to {file} with sha {file_sha or 'NA'}[/]")
             all_results = []
 

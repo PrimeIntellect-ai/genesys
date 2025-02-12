@@ -43,7 +43,9 @@ class DataLoaderGenesys:
     Each dataset that is pass must have a "train" split and the content must be a list of dict with at least a "problem" and a "ground_truth" key.
     """
 
-    def __init__(self, config: DataConfig, tokenizer: AutoTokenizer, do_tokenization: bool = False):
+    def __init__(
+        self, config: DataConfig, tokenizer: AutoTokenizer, prime_metric: PrimeMetric, do_tokenization: bool = False
+    ):
         self.config = config
 
         self.paths = list(config.path.split(","))
@@ -93,7 +95,7 @@ class DataLoaderGenesys:
             for i, length in enumerate(self.dataset_lengths)
         ]
 
-        self.prime_metric = PrimeMetric(disable=not (config.prime_log), period=config.prime_log_freq)
+        self.prime_metric = prime_metric
 
     def _prepare_batch(self, batch: dict, dataset: str) -> tuple:
         batch = repeat_elements(
