@@ -51,7 +51,7 @@ def main(config: GenerateConfig):
 
     # Initialize components
     log("[cyan] Configuring output path and gcp bucket...[/]")
-if config.gcp_bucket is not None:
+    if config.gcp_bucket is not None:
         gcp_credentials = os.environ.get("GCP_CREDENTIALS_BASE64")
         assert gcp_credentials is not None, "the GCP_CREDENTIALS_BASE64 environment variable is not set"
     if not os.path.exists(config.path_output):
