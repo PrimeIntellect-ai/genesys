@@ -1,6 +1,9 @@
 import base64
 from .ndd import compute_newton_coefficients, evaluate_polynomial
 import torch
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def find_injective_modulus(x: list[int]) -> int:
@@ -20,6 +23,10 @@ class ProofPoly:
 
     def __len__(self):
         return len(self.coeffs)
+
+    @classmethod
+    def null(cls, length: int) -> "ProofPoly":
+        return cls([0] * length, 0)
 
     @classmethod
     def from_points(cls, x: list[int] | torch.Tensor, y: list[int] | torch.Tensor) -> "ProofPoly":
@@ -79,20 +86,25 @@ def _build_proofs(
 ) -> list[ProofPoly]:
     proofs = []
 
-    # Prefill
-    if not skip_prefill:
-        flat_view = activations[0].view(-1)
-        topk_indices = flat_view.abs().topk(topk).indices
-        topk_values = flat_view[topk_indices]
-        proof = ProofPoly.from_points(topk_indices, topk_values)
-        proofs.append(proof)
+    # In order to not crash, we return null proofs if there is an error
+    try:
+        # Prefill
+        if not skip_prefill:
+            flat_view = activations[0].view(-1)
+            topk_indices = flat_view.abs().topk(topk).indices
+            topk_values = flat_view[topk_indices]
+            proof = ProofPoly.from_points(topk_indices, topk_values)
+            proofs.append(proof)
 
-    # Batched Decode
-    for i in range(1, len(activations), decode_batching_size):
-        flat_view = torch.cat([i.view(-1) for i in activations[i : i + decode_batching_size]])
-        topk_indices = flat_view.abs().topk(topk).indices
-        topk_values = flat_view[topk_indices]
-        proof = ProofPoly.from_points(topk_indices, topk_values)
-        proofs.append(proof)
+        # Batched Decode
+        for i in range(1, len(activations), decode_batching_size):
+            flat_view = torch.cat([i.view(-1) for i in activations[i : i + decode_batching_size]])
+            topk_indices = flat_view.abs().topk(topk).indices
+            topk_values = flat_view[topk_indices]
+            proof = ProofPoly.from_points(topk_indices, topk_values)
+            proofs.append(proof)
+    except Exception as e:
+        logger.error(f"Error building proofs: {e}")
+        proofs = [ProofPoly.null(128)] * (1 + (len(activations) - 1 + decode_batching_size) // decode_batching_size)
 
     return proofs
