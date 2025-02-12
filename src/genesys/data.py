@@ -43,7 +43,7 @@ class DataLoaderGenesys:
     Each dataset that is pass must have a "train" split and the content must be a list of dict with at least a "problem" and a "ground_truth" key.
     """
 
-    def __init__(self, config: DataConfig, tokenizer: AutoTokenizer):
+    def __init__(self, config: DataConfig, tokenizer: AutoTokenizer, tokenize: bool = False):
         self.config = config
 
         self.paths = list(config.path.split(","))
@@ -72,6 +72,7 @@ class DataLoaderGenesys:
 
         self.total_samples = min(max_samples, total_samples)
 
+        self.tokenize = tokenize
         self.tokenizer = tokenizer
 
         self.dataset_lengths = [len(dataset) for dataset in self.datasets]
@@ -111,7 +112,9 @@ class DataLoaderGenesys:
                 [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
             ]
 
-        batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
+        batch_inputs = self.tokenizer.apply_chat_template(
+            batch_messages, tokenize=self.tokenize, continue_final_message=True
+        )
 
         return batch_inputs, batch
 
