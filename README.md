@@ -83,7 +83,7 @@ sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/
 ```
 export HF_HUB_ETAG_TIMEOUT=500
 export GCP_CREDENTIALS_BASE64=XXX
-export HF_TOKEN=xxx
+export HF_TOKEN=xxx # this is optional for private models or higher rate limits
 bash ./script/entrypoint.sh
 ```
 
