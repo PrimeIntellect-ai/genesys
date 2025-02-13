@@ -1,4 +1,5 @@
 name_model = "deepseek-ai/DeepSeek-R1"
+# name_model = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B" # for testing
 num_gpus = 8
 sample_per_file = 512
 temperature = 0.6 # 0.6 is the value from the R1 model card for evaluation
@@ -9,8 +10,8 @@ gcp_bucket = "gs://synthetic-1-datasets/generated_dataset/deepseek_r1_continued_
 pre_download_retry = 3
 
 [data]
-batch_size = 512
-path = "felix-red-panda/reasoning_traces_too_long_v1"
+batch_size = 128 # very long context: lower batch size for this
+path = "felix-red-panda/reasoning_traces_too_long_v2_1"
 prime_log = true
 retry_download = 3
 continued_generation=true
