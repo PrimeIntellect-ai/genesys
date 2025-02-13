@@ -205,26 +205,27 @@ def download_model(name_model: str, pre_download_retry: int):
                 raise e
 
 
-def load_dataset_ft(path: str, retry):  # -> Dataset | List | Any | None:
+def load_dataset_ft(path: str, retry: int, reverse: bool = False): # -> Dataset | List | Any | None:
     """Load a dataset from HuggingFace Hub with retries with exponential backoff.
-
+    
     Args:
         path (str): HuggingFace dataset path/name
         retry (int): Number of retry attempts.
+        reverse (bool, optional): Whether to reverse the dataset order. Defaults to False.
     """
     console = Console()
-
     for i in range(retry):
         try:
-            return load_dataset(path)["train"]
+            dataset = load_dataset(path)["train"]
+            if reverse:
+                return dataset.select(range(len(dataset)-1, -1, -1))
+            return dataset
         except Exception as e:
             wait_times = [2, 10, 60]
             t = wait_times[min(i, len(wait_times) - 1)]
-
             console.print(f"[red]Failed to pre-download model, retrying in {t} seconds [/]")
             console.print(f"[red]Error: {e}[/]")
             time.sleep(t)
-
             if i == retry - 1:
                 raise e
 
