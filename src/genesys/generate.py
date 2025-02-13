@@ -76,7 +76,7 @@ def main(config: GenerateConfig):
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
 
     log("[cyan] Loading dataloader...[/]")
-    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, prime_metric=prime_metric, do_tokenization=True)
+    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, prime_metric=prime_metric)
     machine_info = get_machine_info()
 
     log("[bold green]✨ Setup complete! Starting generation...[/]")
