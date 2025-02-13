@@ -102,16 +102,26 @@ class DataLoaderGenesys:
             batch_messages = [
                 [
                     {"role": "user", "content": b["prompt"]},
-                    {"role": "assistant", "content": "<think>/n" + b["llm_response"]},
+                    {"role": "assistant", "content": "<think>\n" + b["llm_response_first_time"]},
+                    {"role": "assistant", "content": ""}, # this message needs to be here so hf templating works, we're stripping it out again below
                 ]
                 for b in batch
             ]
+            batch_inputs = self.tokenizer.apply_chat_template(
+                batch_messages, 
+                tokenize=False, 
+                continue_final_message=True
+            )
+            unwanted_suffix = "<｜end▁of▁sentence｜><｜Assistant｜><｜end▁of▁sentence｜>"  # strip out last message
+            for i, inp in enumerate(batch_inputs):
+                if inp.endswith(unwanted_suffix):
+                    batch_inputs[i] = inp[: -len(unwanted_suffix)]
         else:
             batch_messages = [
                 [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
             ]
-
-        batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
+            
+            batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
 
         return batch_inputs, batch
 
