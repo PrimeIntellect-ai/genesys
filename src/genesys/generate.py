@@ -16,7 +16,7 @@ from genesys.utils import (
 )
 from genesys.prime_metrics import PrimeMetric
 from genesys.data import DataConfig, DataLoaderGenesys
-from genesys.toploc import build_proofs_base64, sha256sum
+from toploc import build_proofs_base64, sha256sum
 
 
 class GenerateConfig(BaseConfig):
