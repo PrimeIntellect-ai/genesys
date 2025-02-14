@@ -78,6 +78,15 @@ Your file with responses will be saved to `/output`.
 sudo docker run --gpus all  -it primeintellect/genesys:latest uv run python src/genesys/generate.py @ configs/debug.toml
 ```
 
+## prod run
+
+```
+export HF_HUB_ETAG_TIMEOUT=500
+export GCP_CREDENTIALS_BASE64=XXX # if you want to set up so it's stored in a GCP bucket
+export HF_TOKEN=xxx # this is optional for private models or higher rate limits
+bash ./script/entrypoint.sh
+```
+
 ## Verification
 
 To verify model responses, you can use the `src/genesys/verify.py` script along with the output file from `src/genesys/generate.py` located in `output`.
