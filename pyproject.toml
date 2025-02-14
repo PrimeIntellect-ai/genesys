@@ -21,7 +21,7 @@ dependencies = [
 
 
 sglang = [
-    "sglang[srt]>=0.4.2.post4",
+    "sglang[srt]>=0.4.3",
     "sympy",
     "uvloop",
     "psutil",
@@ -45,4 +45,3 @@ line-length = 120
 
 [tool.uv]
 dev-dependencies = ["ruff>=0.5.0", "pre-commit>=3.0.0","pytest>=7.0.0", "faker>=0"]
-
