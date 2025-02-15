@@ -103,14 +103,15 @@ class DataLoaderGenesys:
                 [
                     {"role": "user", "content": b["prompt"]},
                     {"role": "assistant", "content": "<think>\n" + b["llm_response_first_time"]},
-                    {"role": "assistant", "content": ""}, # this message needs to be here so hf templating works, we're stripping it out again below
+                    {
+                        "role": "assistant",
+                        "content": "",
+                    },  # this message needs to be here so hf templating works, we're stripping it out again below
                 ]
                 for b in batch
             ]
             batch_inputs = self.tokenizer.apply_chat_template(
-                batch_messages, 
-                tokenize=False, 
-                continue_final_message=True
+                batch_messages, tokenize=False, continue_final_message=True
             )
             unwanted_suffix = "<｜end▁of▁sentence｜><｜Assistant｜><｜end▁of▁sentence｜>"  # strip out last message
             for i, inp in enumerate(batch_inputs):
@@ -120,8 +121,11 @@ class DataLoaderGenesys:
             batch_messages = [
                 [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
             ]
-            batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
+            batch_inputs = self.tokenizer.apply_chat_template(
+                batch_messages, tokenize=False, continue_final_message=True
+            )
 
+        batch_inputs = self.tokenizer(batch_inputs, add_special_tokens=False).input_ids
         return batch_inputs, batch
 
     def __iter__(self) -> Generator[tuple, None, None]:

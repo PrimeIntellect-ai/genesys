@@ -59,11 +59,7 @@ def main(config: GenerateConfig):
         assert gcp_credentials is not None, "the GCP_CREDENTIALS_BASE64 environment variable is not set"
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
-    gcp_bucket = (
-        GcpBucket(config.gcp_bucket, gcp_credentials)
-        if config.gcp_bucket is not None
-        else None
-    )
+    gcp_bucket = GcpBucket(config.gcp_bucket, gcp_credentials) if config.gcp_bucket is not None else None
 
     if config.pre_download_retry > 0:
         log("[cyan] Pre-downloading model...[/]")
@@ -77,6 +73,9 @@ def main(config: GenerateConfig):
 
     log("[cyan] Loading tokenizer...[/]")
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
+    tokenizer.chat_template = tokenizer.chat_template.replace(
+        "{% if '</think>' in content %}{% set content = content.split('</think>')[-1] %}{% endif %}", ""
+    )
 
     log("[cyan] Loading dataloader...[/]")
     dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, prime_metric=prime_metric)
