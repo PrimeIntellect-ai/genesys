@@ -43,7 +43,7 @@ class DataLoaderGenesys:
     Each dataset that is pass must have a "train" split and the content must be a list of dict with at least a "problem" and a "ground_truth" key.
     """
 
-    def __init__(self, config: DataConfig, tokenizer: AutoTokenizer):
+    def __init__(self, config: DataConfig, tokenizer: AutoTokenizer, prime_metric: PrimeMetric):
         self.config = config
 
         self.paths = list(config.path.split(","))
@@ -92,7 +92,7 @@ class DataLoaderGenesys:
             for i, length in enumerate(self.dataset_lengths)
         ]
 
-        self.prime_metric = PrimeMetric(disable=not (config.prime_log), period=config.prime_log_freq)
+        self.prime_metric = prime_metric
 
     def _prepare_batch(self, batch: dict, dataset: str) -> tuple:
         batch = repeat_elements(
@@ -103,14 +103,15 @@ class DataLoaderGenesys:
                 [
                     {"role": "user", "content": b["prompt"]},
                     {"role": "assistant", "content": "<think>\n" + b["llm_response_first_time"]},
-                    {"role": "assistant", "content": ""}, # this message needs to be here so hf templating works, we're stripping it out again below
+                    {
+                        "role": "assistant",
+                        "content": "",
+                    },  # this message needs to be here so hf templating works, we're stripping it out again below
                 ]
                 for b in batch
             ]
             batch_inputs = self.tokenizer.apply_chat_template(
-                batch_messages, 
-                tokenize=False, 
-                continue_final_message=True
+                batch_messages, tokenize=False, continue_final_message=True
             )
             unwanted_suffix = "<｜end▁of▁sentence｜><｜Assistant｜><｜end▁of▁sentence｜>"  # strip out last message
             for i, inp in enumerate(batch_inputs):
@@ -120,9 +121,11 @@ class DataLoaderGenesys:
             batch_messages = [
                 [{"role": "user", "content": b["prompt"]}, {"role": "assistant", "content": "<think>/n"}] for b in batch
             ]
-            
-            batch_inputs = self.tokenizer.apply_chat_template(batch_messages, tokenize=False, continue_final_message=True)
+            batch_inputs = self.tokenizer.apply_chat_template(
+                batch_messages, tokenize=False, continue_final_message=True
+            )
 
+        batch_inputs = self.tokenizer(batch_inputs, add_special_tokens=False).input_ids
         return batch_inputs, batch
 
     def __iter__(self) -> Generator[tuple, None, None]:

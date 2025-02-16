@@ -14,7 +14,9 @@ from genesys.utils import (
     log,
     console,
 )
+from genesys.prime_metrics import PrimeMetric
 from genesys.data import DataConfig, DataLoaderGenesys
+from toploc import build_proofs_base64, sha256sum
 
 
 class GenerateConfig(BaseConfig):
@@ -46,6 +48,7 @@ class GenerateConfig(BaseConfig):
 def main(config: GenerateConfig):
     # Initial welcome table
     display_config_panel(console, config)
+    prime_metric = PrimeMetric(disable=not (config.data.prime_log), period=config.data.prime_log_freq)
 
     log("[bold yellow] Loading model and initializing pipeline...[/]")
 
@@ -56,11 +59,7 @@ def main(config: GenerateConfig):
         assert gcp_credentials is not None, "the GCP_CREDENTIALS_BASE64 environment variable is not set"
     if not os.path.exists(config.path_output):
         os.makedirs(config.path_output)
-    gcp_bucket = (
-        GcpBucket(config.gcp_bucket, gcp_credentials)
-        if config.gcp_bucket is not None
-        else None
-    )
+    gcp_bucket = GcpBucket(config.gcp_bucket, gcp_credentials) if config.gcp_bucket is not None else None
 
     if config.pre_download_retry > 0:
         log("[cyan] Pre-downloading model...[/]")
@@ -68,13 +67,18 @@ def main(config: GenerateConfig):
 
     log("[cyan] Loading model and Engine...[/]")
 
-    llm = sgl.Engine(model_path=config.name_model, tp_size=config.num_gpus)
+    llm = sgl.Engine(
+        model_path=config.name_model, tp_size=config.num_gpus, return_hidden_states=True, skip_tokenizer_init=True
+    )
 
     log("[cyan] Loading tokenizer...[/]")
     tokenizer = AutoTokenizer.from_pretrained(config.name_model)
+    tokenizer.chat_template = tokenizer.chat_template.replace(
+        "{% if '</think>' in content %}{% set content = content.split('</think>')[-1] %}{% endif %}", ""
+    )
 
     log("[cyan] Loading dataloader...[/]")
-    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer)
+    dataloader = DataLoaderGenesys(config.data, tokenizer=tokenizer, prime_metric=prime_metric)
     machine_info = get_machine_info()
 
     log("[bold green]✨ Setup complete! Starting generation...[/]")
@@ -85,13 +89,18 @@ def main(config: GenerateConfig):
     total_samples = 0
 
     for batch_inputs, batch in dataloader:
-        responses = llm.generate(batch_inputs, sampling_params)
-        for batch_element, response in zip(batch, responses):
-            batch_element["llm_response"] = response["text"]
+        responses = llm.generate(input_ids=batch_inputs, sampling_params=sampling_params)
+        for batch_input, batch_element, response in zip(batch_inputs, batch, responses):
+            batch_element["llm_response"] = tokenizer.decode(response["token_ids"], skip_special_tokens=True)
             batch_element["response_id"] = f"{batch_element['problem_id']}_{generate_short_id()}"
             batch_element["model_name"] = config.name_model
             batch_element["generation_config"] = sampling_params
             batch_element["machine_info"] = machine_info
+            batch_element["input_ids"] = batch_input
+            batch_element["output_ids"] = response["token_ids"]
+            batch_element["proof"] = "".join(
+                build_proofs_base64(response["meta_info"]["hidden_states"], 32, 128, skip_prefill=True)
+            )
             all_results.append(batch_element)
         total_samples += len(batch)
 
@@ -99,6 +108,9 @@ def main(config: GenerateConfig):
             file_name = f"{config.out_file_prefix}_{uuid.uuid4()}.jsonl"
             file = os.path.join(config.path_output, file_name)
             save_batch_results(all_results, file, gcp_bucket)
+            file_sha = sha256sum(file)
+            prime_metric.log_prime({"file_sha": file_sha, "file_name": file_name})
+            log(f"[bold green]✨ Saved {len(all_results)} samples to {file} with sha {file_sha or 'NA'}[/]")
             all_results = []
 
     log(f"[bold green]✨ Generation complete! Total samples: {total_samples}[/]")

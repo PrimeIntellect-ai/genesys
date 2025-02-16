@@ -20,6 +20,7 @@ from rich import box
 from rich.console import Console
 from huggingface_hub import snapshot_download
 from datasets import load_dataset
+from pathlib import Path
 
 
 class GcpBucket:
@@ -75,7 +76,7 @@ class GcpBucket:
             self.worker_thread.join()
 
 
-def save_batch_results(batch_results, results_file, gcp_bucket: GcpBucket | None = None):
+def save_batch_results(batch_results, results_file: str | Path, gcp_bucket: GcpBucket | None = None):
     # Save locally first
     with open(results_file, "a") as f:
         for result in batch_results:
