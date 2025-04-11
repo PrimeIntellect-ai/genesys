@@ -22,7 +22,6 @@ from huggingface_hub import snapshot_download
 from datasets import load_dataset
 from pathlib import Path
 
-
 class GcpBucket:
     def __init__(self, gcp_path: str, credentials_base64: str):
         # Parse GCS path (e.g., "gs://bucket-name/folder/path")
