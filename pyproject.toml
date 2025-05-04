@@ -16,6 +16,7 @@ dependencies = [
     "docker>=7.1.0",
     "pynvml>=12.0.0",
     "toploc>=0.0.2",
+    "cydifflib>=1.2.0",
 ]
 
 [project.optional-dependencies]
