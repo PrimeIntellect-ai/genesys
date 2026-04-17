@@ -78,7 +78,8 @@ async def async_main(config: VerifyConfig):
             d["metadata"] = ast.literal_eval(d["metadata"])
             to_verify.append(d)
 
-    verification_results = await verify(to_verify)
+    response_objects = [Response.model_validate(d) for d in to_verify]
+    verification_results = await verify(response_objects)
 
     all_results = []
     for v, d in zip(verification_results, to_verify):
